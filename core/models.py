@@ -17,6 +17,7 @@ class Theme(models.Model):
 # ----------------------------------------------------
 class Event(models.Model):
     name = models.CharField(max_length=200)
+    description = models.CharField(max_length=500, blank=True, null=True) # 새로운 설명 필드
     date = models.DateField()
 
     #프론트엔드로부터 받을 장소 정보 필드 (4개)
@@ -29,8 +30,12 @@ class Event(models.Model):
     theme = models.CharField(max_length=50, default='기본')  # 선택된 테마 이름 저장
     food_description = models.CharField(max_length=255, blank=True, null=True)  # 음식/준비물 설명
 
+    host_name = models.CharField(max_length=100, default='주최자') # 새로운 주최자 이름 필드
+    fee = models.IntegerField(default=0) # 새로운 참가비 필드
+
     # 초대 링크에 사용될 고유 코드 필드
     invite_code = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    max_members = models.PositiveIntegerField(default=10)
 
     def __str__(self):
         return self.name

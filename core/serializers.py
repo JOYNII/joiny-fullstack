@@ -15,16 +15,25 @@ class ThemeSerializer(serializers.ModelSerializer):
 # ----------------------------------------------------
 # 추가적 Event Serializer 확장 (장소, 테마, 음식 필드 반영)
 # ----------------------------------------------------
+class ParticipantSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Participant
+        fields = '__all__'
+
+
 class EventSerializer(serializers.ModelSerializer):
     invite_url = serializers.SerializerMethodField()
+    members = ParticipantSerializer(many=True, read_only=True, source='participant_set')
+    max_members = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Event
         fields = [
-            'id', 'name', 'date',
-            'location_name', 'latitude', 'longitude', 'place_id', # 4단계 장소 필드
-            'theme', 'food_description', # 3단계 테마/음식 필드
-            'invite_code', 'invite_url'
+            'id', 'name', 'description', 'date', # description 필드 추가
+            'location_name', 'latitude', 'longitude', 'place_id',
+            'theme', 'food_description',
+            'host_name', 'fee', # host_name, fee 필드 추가
+            'invite_code', 'invite_url', 'members', 'max_members'
         ]
         read_only_fields = ['invite_code', 'invite_url']
 
@@ -36,11 +45,6 @@ class EventSerializer(serializers.ModelSerializer):
         # 예시 URL: http://.../api/events/by_invite_code/uuid_code/
         return request.build_absolute_uri(f"/invite/{obj.invite_code}")
 
-
-class ParticipantSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Participant
-        fields = '__all__'
 
 
 class TodoSerializer(serializers.ModelSerializer):
