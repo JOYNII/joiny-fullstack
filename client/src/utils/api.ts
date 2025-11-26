@@ -1,5 +1,6 @@
 // src/utils/api.ts
 import { Party } from '../types';
+import { User } from '../types';
 
 const API_BASE_URL = '/api';
 
