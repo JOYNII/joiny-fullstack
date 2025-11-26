@@ -1,17 +1,26 @@
 "use client";
-import React from "react";
-import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query"; 
+import React, { useState } from "react";
 import PartyCard from "../../components/PartyCard";
 import PageHeader from "../../components/PageHeader";
 import { getParties } from "../../utils/api";
 import { Party } from "../../types";
+import ThemeSelectionModal from './components/ThemeSelectionModal';
 
 const HomePage = () => {
   const { data: parties, isLoading, error } = useQuery<Party[]>({
     queryKey: ['parties'],
     queryFn: getParties
   });
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleCreateNewPartyClick = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
 
   return (
     <div className="bg-neutral-50 text-gray-900 p-6 md:p-12 lg:p-20">
@@ -25,8 +34,8 @@ const HomePage = () => {
           <h2 className="text-2xl md:text-3xl font-semibold text-gray-800 tracking-tight">
             활성화된 파티 목록 ({parties?.length || 0})
           </h2>
-          <Link
-            href="/theme"
+          <button
+            onClick={handleCreateNewPartyClick}
             className="bg-blue-600 text-white px-5 py-2.5 rounded-lg shadow hover:bg-blue-700 transition-all duration-300 text-sm font-semibold flex items-center space-x-2"
           >
             <svg
@@ -44,7 +53,7 @@ const HomePage = () => {
               ></path>
             </svg>
             <span>새 파티</span>
-          </Link>
+          </button>
         </div>
 
         {isLoading && <p className="text-lg text-gray-600">파티 목록을 불러오는 중...</p>}
@@ -60,6 +69,8 @@ const HomePage = () => {
           !isLoading && <p className="text-lg text-gray-600">아직 가입한 파티가 없습니다.</p>
         )}
       </section>
+
+      {isModalOpen && <ThemeSelectionModal onClose={handleCloseModal} />}
     </div>
   );
 };
