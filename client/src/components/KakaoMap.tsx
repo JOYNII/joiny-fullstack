@@ -13,8 +13,7 @@ export default function KakaoMap({
 }: KakaoMapProps) {
   const [loading, error] = useKakaoLoader({
     appkey: process.env.NEXT_PUBLIC_KAKAOMAP_APP_KEY!,
-    libraries: ["services"],
-    integrity: undefined,
+    libraries: ['services'],
   });
 
   const [info, setInfo] = useState<any>();

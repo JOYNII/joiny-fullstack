@@ -24,7 +24,6 @@ class ParticipantSerializer(serializers.ModelSerializer):
 class EventSerializer(serializers.ModelSerializer):
     invite_url = serializers.SerializerMethodField()
     members = ParticipantSerializer(many=True, read_only=True, source='participant_set')
-    max_members = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Event

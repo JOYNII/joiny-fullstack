@@ -2,6 +2,7 @@
 import { Party } from '../types';
 import { User } from '../types';
 
+
 const API_BASE_URL = '/api';
 
 const MOCK_USERS: User[] = [
