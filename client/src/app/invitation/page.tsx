@@ -58,20 +58,20 @@ export default function InvitationPage() {
       alert("주최자, 파티명, 일자는 필수 항목입니다.");
       return;
     }
-    
+
     const feeValue = typeof fee === 'string' && fee === '' ? 0 : Number(fee);
 
     mutate({
       theme,
       hostName,
       partyName,
-      partyDate: partyDate, // Keep partyDate for the form field
-      date: partyDate, // Map partyDate to date for the backend
+      partyDate: partyDate,
+      date: partyDate,
       partyDescription,
       place,
       partyFood,
       fee: feeValue,
-      maxMembers: 10, // Assuming a default for now
+      maxMembers: 10,
     });
   };
 

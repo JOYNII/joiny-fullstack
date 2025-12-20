@@ -1,9 +1,9 @@
 "use client";
-import { useQuery } from "@tanstack/react-query"; 
+import { useQuery } from "@tanstack/react-query";
 import React, { useState } from "react";
 import PartyCard from "../../components/PartyCard";
 import PageHeader from "../../components/PageHeader";
-import { getParties } from "../../utils/api";
+import { getParties, getCurrentUser } from "../../utils/api";
 import { Party } from "../../types";
 import ThemeSelectionModal from './components/ThemeSelectionModal';
 
@@ -24,7 +24,7 @@ const HomePage = () => {
 
   return (
     <div className="bg-neutral-50 text-gray-900 p-6 md:p-12 lg:p-20">
-      <PageHeader 
+      <PageHeader
         title="Myparty"
         subtitle="내가 가입한 파티, 그리고 새로운 시작."
       />
@@ -58,7 +58,7 @@ const HomePage = () => {
 
         {isLoading && <p className="text-lg text-gray-600">파티 목록을 불러오는 중...</p>}
         {error && <p className="text-lg text-red-600">오류가 발생했습니다: {error.message}</p>}
-        
+
         {parties && parties.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
             {parties.map((party) => (

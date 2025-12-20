@@ -1,6 +1,5 @@
 // src/utils/api.ts
-import { Party } from '../types';
-import { User } from '../types';
+import { Party, User } from '../types';
 
 const API_BASE_URL = '/api';
 
@@ -10,111 +9,196 @@ const MOCK_USERS: User[] = [
   { id: 'user3', name: '최디자' },
 ];
 
-const CURRENT_USER: User = MOCK_USERS[0]; // Default user
+const CURRENT_USER: User = MOCK_USERS[0];
+
+// =============================================================================
+// [MOCK STORAGE HELPER] - 세션 스토리지 기반 (새로고침 시 유지)
+// =============================================================================
+const STORAGE_KEY_PARTIES = 'MOCK_PARTIES_DATA';
+const STORAGE_KEY_MEMBERS = 'MOCK_MEMBERS_DATA';
+
+const getStoredParties = (): Party[] | null => {
+  if (typeof window === 'undefined') return null;
+  const stored = sessionStorage.getItem(STORAGE_KEY_PARTIES);
+  return stored ? JSON.parse(stored) : null;
+};
+
+const setStoredParties = (parties: Party[]) => {
+  if (typeof window !== 'undefined') {
+    sessionStorage.setItem(STORAGE_KEY_PARTIES, JSON.stringify(parties));
+  }
+};
+// =============================================================================
 
 export const getCurrentUser = (): User => {
   if (typeof window === 'undefined') return CURRENT_USER;
-  
   const params = new URLSearchParams(window.location.search);
   const userId = params.get('user');
-  
   if (userId) {
     const userIndex = parseInt(userId, 10) - 1;
-    if (userIndex >= 0 && userIndex < MOCK_USERS.length) {
-      return MOCK_USERS[userIndex];
-    }
+    if (userIndex >= 0 && userIndex < MOCK_USERS.length) return MOCK_USERS[userIndex];
   }
-  
   return CURRENT_USER;
 };
 
 export const getParties = async (): Promise<Party[]> => {
-  const response = await fetch(`${API_BASE_URL}/events/`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch parties');
+  // 1. 세션 스토리지에 데이터가 있으면 그거 리턴 (새로고침해도 유지됨!)
+  const cachedParties = getStoredParties();
+
+  if (cachedParties) {
+    console.log('[MOCK API] Returning cached parties from SessionStorage');
+    await new Promise(r => setTimeout(r, 200));
+    return Promise.resolve(cachedParties);
   }
-  const data = await response.json();
-  // 백엔드 응답(snake_case)을 프론트엔드 타입(camelCase)에 맞게 변환
-  return data.map((party: any) => ({
-    id: party.id,
-    partyName: party.name,
-    partyDescription: party.description, // 백엔드에서 제공되는 description 사용
-    date: party.date,
-    place: party.location_name,
-    partyFood: party.food_description,
-    maxMembers: party.max_members,
-    hostName: party.host_name, // 백엔드에서 제공되는 host_name 사용
-    fee: party.fee, // 백엔드에서 제공되는 fee 사용
-    members: party.members || [],
-    theme: party.theme,
-  }));
+
+  // 2. 없으면 백엔드에서 초기 데이터 가져오기
+  try {
+    const response = await fetch(`${API_BASE_URL}/events/`);
+    if (response.ok) {
+      const data = await response.json();
+      const mappedParties = data.map((party: any) => ({
+        id: party.id,
+        partyName: party.name,
+        partyDescription: party.description,
+        date: party.date,
+        place: party.location_name,
+        partyFood: party.food_description,
+        maxMembers: party.max_members,
+        hostName: party.host_name,
+        fee: party.fee,
+        members: party.members || [],
+        theme: party.theme,
+      }));
+
+      // 스토리지에 저장!
+      setStoredParties(mappedParties);
+      console.log('[MOCK API] Initialized storage from backend');
+      return mappedParties;
+    }
+  } catch (e) {
+    console.warn('[MOCK API] Failed to fetch, using empty list', e);
+  }
+
+  return [];
 };
 
 export const getPartyById = async (id: string): Promise<Party | undefined> => {
+  // 1. 스토리지에서 먼저 찾기 (삭제된 파티인지 확인 가능)
+  const cachedParties = getStoredParties();
+  if (cachedParties) {
+    const found = cachedParties.find(p => p.id.toString() === id);
+    if (found) return found;
+  }
+
+  // 2. 없으면 백엔드 (혹은 에러)
   const response = await fetch(`${API_BASE_URL}/events/${id}/`);
   if (!response.ok) {
-    if (response.status === 404) {
-      return undefined;
-    }
+    if (response.status === 404) return undefined;
     throw new Error('Failed to fetch party');
   }
   const party = await response.json();
   if (!party) return undefined;
 
-  // 백엔드 응답(snake_case)을 프론트엔드 타입(camelCase)에 맞게 변환
   return {
     id: party.id,
     partyName: party.name,
-    partyDescription: party.description, // 백엔드에서 제공되는 description 사용
+    partyDescription: party.description,
     date: party.date,
     place: party.location_name,
     partyFood: party.food_description,
     maxMembers: party.max_members,
-    hostName: party.host_name, // 백엔드에서 제공되는 host_name 사용
-    fee: party.fee, // 백엔드에서 제공되는 fee 사용
+    hostName: party.host_name,
+    fee: party.fee,
     members: party.members || [],
     theme: party.theme,
   };
 };
 
 export const createParty = async (partyData: Omit<Party, 'id' | 'members'>): Promise<Party> => {
+  // ... 기존 코드 (createParty는 중요도가 낮으므로 간략화하지만, Mock 목록에 추가하는 로직 넣으면 좋음)
   const payload = {
     name: partyData.partyName,
-    description: partyData.partyDescription, // 새로운 description 필드 추가
+    description: partyData.partyDescription,
     date: partyData.date,
     theme: partyData.theme,
     location_name: partyData.place,
     food_description: partyData.partyFood,
-    host_name: partyData.hostName, // 새로운 host_name 필드 추가
-    fee: partyData.fee, // 새로운 fee 필드 추가
+    host_name: partyData.hostName,
+    fee: partyData.fee,
     max_members: partyData.maxMembers,
-    // TODO: Add latitude, longitude, and place_id from the location selection
-    latitude: 37.5665,
-    longitude: 126.9780,
-    place_id: 'some-place-id',
+    latitude: 37.5665, longitude: 126.9780, place_id: 'mock'
   };
-
-  console.log('Sending data to backend:', payload);
 
   const response = await fetch(`${API_BASE_URL}/events/`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
 
-  if (!response.ok) {
-    const errorText = await response.text(); // Get response as text first
-    console.error('Raw backend error response:', errorText); // Log the raw text
-    try {
-      const errorData = JSON.parse(errorText); // Try to parse it as JSON
-      throw new Error(errorData.detail || 'Failed to create party');
-    } catch (e) {
-      // If parsing fails, throw the raw text as the error
-      throw new Error('Failed to create party. Server responded with: ' + errorText);
+  if (!response.ok) throw new Error('Failed to create party');
+
+  const newPartyData = await response.json();
+
+  // [MOCK] 생성된 파티를 스토리지에도 추가 (화면 반영을 위해)
+  const mappedNewParty: Party = {
+    id: newPartyData.id,
+    partyName: newPartyData.name,
+    partyDescription: newPartyData.description,
+    date: newPartyData.date,
+    place: newPartyData.location_name,
+    partyFood: newPartyData.food_description,
+    maxMembers: newPartyData.max_members,
+    hostName: newPartyData.host_name,
+    fee: newPartyData.fee,
+    members: newPartyData.members || [],
+    theme: newPartyData.theme,
+  };
+
+  const currentParties = getStoredParties() || [];
+  currentParties.push(mappedNewParty);
+  setStoredParties(currentParties);
+  console.log('[MOCK API] New party added to storage:', mappedNewParty);
+
+  return mappedNewParty;
+};
+
+export const joinParty = async (partyId: string, userId: string): Promise<void> => {
+  // [MOCK] 스토리지 데이터 수정
+  console.log('[MOCK API] Toggling join/leave...');
+  await new Promise(r => setTimeout(r, 300));
+
+  const parties = getStoredParties() || [];
+  const party = parties.find(p => p.id.toString() === partyId);
+
+  if (party) {
+    const idx = party.members.findIndex(m => m.id === userId);
+    if (idx >= 0) {
+      party.members.splice(idx, 1); // 제거
+    } else {
+      const mockUser = MOCK_USERS.find(u => u.id === userId) || { id: userId, name: 'User' };
+      party.members.push(mockUser); // 추가
     }
+    setStoredParties(parties); // 저장
   }
 
-  return response.json();
+  return Promise.resolve();
+};
+
+export const deleteParty = async (partyId: string): Promise<void> => {
+  // [MOCK] 스토리지 데이터 삭제
+  console.log(`[MOCK API] Deleting Party: ${partyId}`);
+  await new Promise(r => setTimeout(r, 500));
+
+  let parties = getStoredParties() || [];
+  const initialLength = parties.length;
+  parties = parties.filter(p => p.id.toString() !== partyId.toString());
+
+  if (parties.length !== initialLength) {
+    setStoredParties(parties); // 저장
+    console.log('[MOCK API] Party deleted from storage.');
+  } else {
+    console.warn('[MOCK API] Party not found in storage to delete.');
+  }
+
+  return Promise.resolve();
 };
