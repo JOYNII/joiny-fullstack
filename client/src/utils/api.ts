@@ -140,6 +140,13 @@ export const createParty = async (partyData: Omit<Party, 'id' | 'members'>): Pro
   const newPartyData = await response.json();
 
   // [MOCK] 생성된 파티를 스토리지에도 추가 (화면 반영을 위해)
+  // 호스트(나)를 첫 번째 멤버로 자동 추가
+  const currentUser = getCurrentUser();
+  const hostMember: User = {
+    id: currentUser.id || 'unknown',
+    name: newPartyData.host_name || currentUser.name || 'Host'
+  };
+
   const mappedNewParty: Party = {
     id: newPartyData.id,
     partyName: newPartyData.name,
@@ -150,7 +157,7 @@ export const createParty = async (partyData: Omit<Party, 'id' | 'members'>): Pro
     maxMembers: newPartyData.max_members,
     hostName: newPartyData.host_name,
     fee: newPartyData.fee,
-    members: newPartyData.members || [],
+    members: [hostMember], // Host added automatically
     theme: newPartyData.theme,
   };
 
