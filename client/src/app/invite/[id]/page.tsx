@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import React, { useState } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getPartyById, getCurrentUser, joinParty } from "../../../utils/api";
 import PleaseLogin from "../../../components/PleaseLogin";
@@ -9,8 +9,8 @@ import PleaseLogin from "../../../components/PleaseLogin";
 export default function InvitationLandingPage() {
     const { id } = useParams();
     const router = useRouter();
+    const searchParams = useSearchParams(); // 쿼리 파라미터 가져오기
     const queryClient = useQueryClient();
-    const [showConfetti, setShowConfetti] = useState(false);
     const [showLoginModal, setShowLoginModal] = useState(false);
 
     // 파티 정보 조회
@@ -27,17 +27,14 @@ export default function InvitationLandingPage() {
             return joinParty(id as string, user.id);
         },
         onSuccess: () => {
-            // 1. 폭죽 효과 실행
-            setShowConfetti(true);
-
-            // 2. 파티 데이터 갱신
+            // 1. 파티 데이터 갱신
             queryClient.invalidateQueries({ queryKey: ['party', id] });
             queryClient.invalidateQueries({ queryKey: ['parties'] });
 
-            // 3. 2초 후 파티 상세 페이지로 이동
-            setTimeout(() => {
-                router.push(`/party/${id}`);
-            }, 2000);
+            // 2. 즉시 파티 상세 페이지로 이동
+            const queryString = searchParams.toString();
+            const targetUrl = `/party/${id}${queryString ? `?${queryString}` : ''} `;
+            router.push(targetUrl);
         },
         onError: (err) => {
             alert("초대 수락에 실패했습니다: " + err);
@@ -109,7 +106,7 @@ export default function InvitationLandingPage() {
                         </div>
                         <div className="flex items-center justify-between text-sm">
                             <span className="text-gray-500">Theme</span>
-                            <span className={`font-medium px-2 py-0.5 rounded-full text-xs ${getThemeColor(party.theme)}`}>
+                            <span className={`font - medium px - 2 py - 0.5 rounded - full text - xs ${getThemeColor(party.theme)} `}>
                                 {party.theme || 'Party'}
                             </span>
                         </div>
@@ -119,10 +116,10 @@ export default function InvitationLandingPage() {
 
                     <button
                         onClick={handleAcceptClick}
-                        disabled={isPending || showConfetti}
+                        disabled={isPending}
                         className="w-full py-4 bg-black text-white text-lg font-bold rounded-xl shadow-lg hover:bg-gray-800 transform active:scale-95 transition-all flex items-center justify-center gap-2 group"
                     >
-                        {showConfetti ? "환영합니다! 🎉" : (
+                        {isPending ? "수락 중..." : (
                             <>
                                 초대 수락하기
                                 <span className="group-hover:translate-x-1 transition-transform">→</span>
@@ -134,9 +131,6 @@ export default function InvitationLandingPage() {
 
             {/* 로그인 모달 */}
             {showLoginModal && <PleaseLogin />}
-
-            {/* 폭죽 효과 컴포넌트 */}
-            {showConfetti && <Confetti />}
         </div>
     );
 }
@@ -148,42 +142,23 @@ function getThemeColor(theme?: string) {
     return 'bg-purple-100 text-purple-600';
 }
 
-// CSS 효과: Blob, FadeIn, Confetti
-const Confetti = () => {
-    return (
-        <div className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center overflow-hidden">
-            {[...Array(30)].map((_, i) => (
-                <div key={i} className="absolute animate-confetti text-2xl" style={{
-                    left: `${Math.random() * 100}%`,
-                    top: `-10%`,
-                    animationDelay: `${Math.random() * 2}s`,
-                    animationDuration: `${2 + Math.random() * 3}s`,
-                    transform: `rotate(${Math.random() * 360}deg)`
-                }}>
-                    {['🎉', '🎊', '✨', '🎈', '🥳'][Math.floor(Math.random() * 5)]}
-                </div>
-            ))}
-        </div>
-    );
-}
-
-// Tailwind에 animation-blob, fade-in-up 등이 정의되어 있지 않으므로 style 태그로 주입 (프로토타이핑용)
+// Styles for Blob & FadeIn (Confetti removed)
 // *주의: 실제 프로덕션에서는 tailwind.config.js에 추가하는 것이 좋음.
 const styles = `
 @keyframes blob {
-    0% { transform: translate(0px, 0px) scale(1); }
-    33% { transform: translate(30px, -50px) scale(1.1); }
-    66% { transform: translate(-20px, 20px) scale(0.9); }
-    100% { transform: translate(0px, 0px) scale(1); }
+    0 % { transform: translate(0px, 0px) scale(1); }
+    33 % { transform: translate(30px, -50px) scale(1.1); }
+    66 % { transform: translate(-20px, 20px) scale(0.9); }
+    100 % { transform: translate(0px, 0px) scale(1); }
 }
-.animate-blob {
+.animate - blob {
     animation: blob 7s infinite;
 }
-.animation-delay-2000 {
-    animation-delay: 2s;
+.animation - delay - 2000 {
+    animation - delay: 2s;
 }
-.animation-delay-4000 {
-    animation-delay: 4s;
+.animation - delay - 4000 {
+    animation - delay: 4s;
 }
 
 @keyframes fadeInUp {
@@ -192,13 +167,5 @@ const styles = `
 }
 .animate-fade-in-up {
     animation: fadeInUp 0.8s ease-out forwards;
-}
-
-@keyframes confettiDrop {
-    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
-}
-.animate-confetti {
-    animation: confettiDrop 3s linear forwards;
 }
 `;
