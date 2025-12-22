@@ -37,6 +37,8 @@ export const shareInvitation = (
         return;
     }
 
+    const shareUrl = `https://jasmin-unsanctioned-noneducationally.ngrok-free.dev/invite/${partyId}?user=1`;
+
     window.Kakao.Share.sendDefault({
         objectType: 'feed', // 피드 타입 (이미지 + 텍스트 + 버튼)
         content: {
@@ -44,16 +46,16 @@ export const shareInvitation = (
             description: `"${partyTitle}" 파티에 당신을 초대합니다. 지금 바로 확인해보세요!`,
             imageUrl: imageUrl,
             link: {
-                mobileWebUrl: `${window.location.origin}/invite/${partyId}`,
-                webUrl: `${window.location.origin}/invite/${partyId}`,
+                mobileWebUrl: shareUrl,
+                webUrl: shareUrl,
             },
         },
         buttons: [
             {
                 title: '초대장 확인하기',
                 link: {
-                    mobileWebUrl: `${window.location.origin}/invite/${partyId}`,
-                    webUrl: `${window.location.origin}/invite/${partyId}`,
+                    mobileWebUrl: shareUrl,
+                    webUrl: shareUrl,
                 },
             },
         ],
