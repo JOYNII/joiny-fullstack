@@ -27,10 +27,10 @@ const FriendsPage = () => {
   const [activeTab, setActiveTab] = useState('friends'); // 'friends' or 'requests'
 
   return (
-    <div className="h-full bg-white">
-      <PageHeader title="친구 목록" subtitle="" />
+    <div className="bg-neutral-50 text-gray-900 p-6 md:p-12 lg:p-20">
+      <PageHeader title="친구 목록" subtitle="함께하는 친구들을 관리해보세요." />
 
-      <div className="p-4">
+      <div className="mt-8">
         {/* Search Bar Placeholder */}
         <div className="mb-4">
           <input
@@ -72,7 +72,7 @@ const FriendsPage = () => {
       </div>
 
       {/* Content based on tab */}
-      <div className="px-4">
+      <div className="mt-4">
         {activeTab === 'friends' && (
           <div>
             {friends.map(friend => <FriendListItem key={friend.id} friend={friend} />)}
