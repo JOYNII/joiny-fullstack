@@ -1,11 +1,6 @@
-/*
-
-1. pleaselogin 컴포넌트, mypage 랜더링 방식
-2. friends 페이지와 그 안에 있는 컴포넌트
-3. themeselection 컴포넌트 
-
-*/
-
+1. pleaselogin 컴포넌트, mypage 랜더링 방식                                                                                                                         │
+2. friends 페이지와 그 안에 있는 컴포넌트                                                                                                                           │
+3. themeselection 컴포넌트
 "use client";
 
 import React, { useState, useEffect } from "react";

@@ -103,11 +103,11 @@ WSGI_APPLICATION = 'joiny_server.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'joiny_db',         # 위에서 만든 데이터베이스 이름
-        'USER': 'joiny_user',       # 위에서 만든 사용자 이름
+        'NAME': 'postgres',         # 위에서 만든 데이터베이스 이름
+        'USER': 'postgres',       # 위에서 만든 사용자 이름
         'PASSWORD': 'dlalsgur12', # 설정한 비밀번호
         'HOST': 'localhost',
-        'PORT': '5432',
+        'PORT': '5432'
     }
 }
 
