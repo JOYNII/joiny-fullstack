@@ -8,11 +8,11 @@ export default function PleaseLogin() {
         <div className="text-center mb-10">
           <img src="/Myparty_icon.png" alt="Myparty Icon" className="mx-auto mb-4 h-20 w-20" />
           <h2 className="text-3xl font-bold text-gray-800">마이파티</h2>
-          <p className="text-gray-600 mt-4">이 서비스를 이용하려면 로그인이 필요합니다.<br/>테스트할 사용자를 선택하세요.</p>
+          <p className="text-gray-600 mt-4">이 서비스를 이용하려면 로그인이 필요합니다.<br />테스트할 사용자를 선택하세요.</p>
         </div>
         <div className="space-y-4">
           <Link
-            href="/mypage" // Temporary: Navigates to mypage with user=1 for testing
+            href="/mypage?user=1" // [TEST] Simulate login as user 1 and go to mypage
             className="block w-full px-6 py-4 text-center font-bold text-gray-800 bg-yellow-300 rounded-xl hover:bg-yellow-400 transition-colors shadow-sm text-lg"
           >
             카카오로 로그인

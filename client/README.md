@@ -11,4 +11,4 @@
 
 - 개발 단계에서 초대 기능 확인 하려면 로컬에서 https로 서버 열어야함
 - + 채팅 기능을 확인하려면 소켓 서버도 열어야함
-- : pnpm install -> pnpm run dev:https-mock
+- : pnpm install -> pnpm run dev:https

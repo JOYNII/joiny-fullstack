@@ -5,7 +5,5 @@ npm-debug.log
 .next/     
 out/
 
-.env
-.env.local  
 
-.todo
+todo

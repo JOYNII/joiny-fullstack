@@ -139,6 +139,13 @@ export const createParty = async (partyData: Omit<Party, 'id' | 'members'>): Pro
   const newPartyData = await response.json();
 
   // [MOCK] 생성된 파티를 스토리지에도 추가 (화면 반영을 위해)
+  // 호스트(나)를 첫 번째 멤버로 자동 추가
+  const currentUser = getCurrentUser();
+  const hostMember: User = {
+    id: currentUser.id || 'unknown',
+    name: newPartyData.host_name || currentUser.name || 'Host'
+  };
+
   const mappedNewParty: Party = {
     id: newPartyData.id,
     partyName: newPartyData.name,
@@ -149,7 +156,7 @@ export const createParty = async (partyData: Omit<Party, 'id' | 'members'>): Pro
     maxMembers: newPartyData.max_members,
     hostName: newPartyData.host_name,
     fee: newPartyData.fee,
-    members: newPartyData.members || [],
+    members: [hostMember], // Host added automatically
     theme: newPartyData.theme,
   };
 
@@ -184,19 +191,29 @@ export const joinParty = async (partyId: string, userId: string): Promise<void> 
 };
 
 export const deleteParty = async (partyId: string): Promise<void> => {
-  // [MOCK] 스토리지 데이터 삭제
-  console.log(`[MOCK API] Deleting Party: ${partyId}`);
-  await new Promise(r => setTimeout(r, 500));
+  console.log(`[API] Deleting Party: ${partyId} from backend...`);
 
+  // [BACKEND] 실제 API 호출
+  const response = await fetch(`${API_BASE_URL}/events/${partyId}/`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    // 에러 처리 (상세 에러 로그)
+    const errorText = await response.text();
+    console.error('Delete failed:', errorText);
+    throw new Error('Failed to delete party');
+  }
+
+  // [SYNC] 성공 시 로컬 Mock 스토리지에서도 삭제 (화면 갱신용)
+  // (나중에 getParties가 완전히 백엔드만 본다면 이 부분은 없어도 됨)
   let parties = getStoredParties() || [];
   const initialLength = parties.length;
   parties = parties.filter(p => p.id.toString() !== partyId.toString());
 
   if (parties.length !== initialLength) {
-    setStoredParties(parties); // 저장
-    console.log('[MOCK API] Party deleted from storage.');
-  } else {
-    console.warn('[MOCK API] Party not found in storage to delete.');
+    setStoredParties(parties);
+    console.log('[API] Party deleted locally for sync.');
   }
 
   return Promise.resolve();

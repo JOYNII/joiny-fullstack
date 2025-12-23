@@ -4,6 +4,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import PleaseLogin from "../../components/PleaseLogin";
 import { getCurrentUser } from "../../utils/api";
 import { User } from "../../types";
@@ -11,21 +12,20 @@ import { User } from "../../types";
 export default function MyPage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const searchParams = useSearchParams();
 
   useEffect(() => {
-    // We need to access window.location.search, so we use useEffect.
+    // URL 파라미터가 변경될 때마다 유저 정보를 다시 가져옴
     const currentUser = getCurrentUser();
+    const hasUserParam = searchParams.get("user");
 
-    // In our mock setup, we'll check the query param.
-    // If 'user' param is missing, we'll consider them "logged out".
-    const params = new URLSearchParams(window.location.search);
-    if (params.has("user")) {
+    if (hasUserParam) {
       setUser(currentUser);
     } else {
       setUser(null);
     }
     setLoading(false);
-  }, []);
+  }, [searchParams]);
 
   if (loading) {
     return <div>Loading...</div>; // Or a proper skeleton/spinner
