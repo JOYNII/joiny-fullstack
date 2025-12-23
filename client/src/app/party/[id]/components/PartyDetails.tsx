@@ -19,7 +19,7 @@ export default function PartyDetails({ party }: PartyDetailsProps) {
         <div>{party.partyName}</div>
 
         <div className="font-semibold text-gray-500">일자</div>
-        <div>{party.partyDate}</div>
+        <div>{party.date}</div>
         
         <div className="font-semibold text-gray-500">장소</div>
         <div>{party.place}</div>

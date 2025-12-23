@@ -14,3 +14,8 @@ from django.core.asgi import get_asgi_application
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'joiny_server.settings')
 
 application = get_asgi_application()
+
+from .sio import sio
+import socketio
+
+application = socketio.ASGIApp(sio, application)

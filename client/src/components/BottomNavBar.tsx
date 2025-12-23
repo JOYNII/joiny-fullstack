@@ -81,24 +81,26 @@ const BottomNavBar = () => {
       <div className="flex justify-around items-center h-full max-w-lg mx-auto">
         <Link
           href={createHref("/home")}
-          className={`flex flex-col items-center justify-center hover:text-blue-500 transition-colors w-1/4 ${
-            pathname === "/home" ? "text-blue-500" : "text-gray-600"
-          }`}
+          className={`flex flex-col items-center justify-center hover:text-blue-500 transition-colors w-1/4 ${pathname === "/home" ? "text-blue-500" : "text-gray-600"
+            }`}
         >
           <HomeIcon />
           <span className="text-xs font-medium">홈</span>
         </Link>
 
-        <div className="flex flex-col items-center justify-center text-gray-600 w-1/4">
+        <Link
+          href={createHref("/friend-location")}
+          className={`flex flex-col items-center justify-center hover:text-blue-500 transition-colors w-1/4 ${pathname === "/friend-location" ? "text-blue-500" : "text-gray-600"
+            }`}
+        >
           <ThemeIcon />
           <span className="text-xs font-medium">친구위치</span>
-        </div>
+        </Link>
 
         <Link
           href={createHref("/friends")}
-          className={`flex flex-col items-center justify-center hover:text-blue-500 transition-colors w-1/4 ${
-            pathname === "/friends" ? "text-blue-500" : "text-gray-600"
-          }`}
+          className={`flex flex-col items-center justify-center hover:text-blue-500 transition-colors w-1/4 ${pathname === "/friends" ? "text-blue-500" : "text-gray-600"
+            }`}
         >
           <UserIcon />
           <span className="text-xs font-medium">친구목록</span>
@@ -106,9 +108,8 @@ const BottomNavBar = () => {
 
         <Link
           href={createHref("/mypage")}
-          className={`flex flex-col items-center justify-center hover:text-blue-500 transition-colors w-1/4 ${
-            pathname === "/mypage" ? "text-blue-500" : "text-gray-600"
-          }`}
+          className={`flex flex-col items-center justify-center hover:text-blue-500 transition-colors w-1/4 ${pathname === "/mypage" ? "text-blue-500" : "text-gray-600"
+            }`}
         >
           <UserIcon />
           <span className="text-xs font-medium">마이</span>

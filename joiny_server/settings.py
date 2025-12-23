@@ -25,7 +25,18 @@ SECRET_KEY = 'django-insecure-#(w1e96lk+*a^s=135dtyu98n6psy2om2z(rx(xej-fl2p5h*f
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+import socket
+# Find local IP address and add it to ALLOWED_HOSTS
+try:
+    hostname = socket.gethostname()
+    ip_address = socket.gethostbyname(hostname)
+except socket.gaierror:
+    ip_address = '127.0.0.1' # Fallback
+
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', ip_address, '.ngrok-free.app']
+
+# Instruct Django to trust the X-Forwarded-Proto header from the proxy
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
 # Application definition
@@ -53,8 +64,15 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://.*\.ngrok-free\.app$",
+]
+
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
+    "http://localhost:3000",
+    "https://localhost:3000",
+    f"http://{ip_address}:3000",
+    f"https://{ip_address}:3000",
 ]
 
 ROOT_URLCONF = 'joiny_server.urls'

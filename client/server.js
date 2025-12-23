@@ -16,6 +16,7 @@ const keyPath = path.join(certDir, "localhost-key.pem");
 const apiProxy = createProxyMiddleware({
   target: "http://127.0.0.1:8000",
   changeOrigin: true,
+  ws: true,
 });
 
 app.prepare().then(() => {
@@ -26,12 +27,13 @@ app.prepare().then(() => {
         cert: fs.readFileSync(certPath),
       },
       (req, res) => {
-        if (req.url.startsWith("/api")) {
+        if (req.url.startsWith("/api") || req.url.startsWith("/socket.io")) {
           return apiProxy(req, res);
         }
         return handle(req, res);
       }
     )
+    .on('upgrade', apiProxy.upgrade) // Handle WebSocket upgrades
     .listen(3000, "0.0.0.0", () => {
       console.log("✅ HTTPS Next.js dev server running");
       console.log("👉 https://localhost:3000");

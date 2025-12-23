@@ -65,7 +65,6 @@ export default function InvitationPage() {
       theme,
       hostName,
       partyName,
-      partyDate: partyDate,
       date: partyDate,
       partyDescription,
       place,
