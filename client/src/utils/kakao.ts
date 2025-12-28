@@ -28,7 +28,6 @@ export const shareInvitation = (
     partyId: string,
     imageUrl: string = 'https://i.ibb.co/3pL6Q05/ticket.png' // 임시 기본 이미지 (필요시 교체)
 ) => {
-    // 사용 전 초기화 재확인
     initKakao();
 
     if (!window.Kakao || !window.Kakao.isInitialized()) {
@@ -37,10 +36,11 @@ export const shareInvitation = (
         return;
     }
 
-    const shareUrl = `https://jasmin-unsanctioned-noneducationally.ngrok-free.dev/invite/${partyId}?user=1`;
+    const NGROK_URL = 'https://estell-supereffective-selena.ngrok-free.dev';
+    const shareUrl = `${NGROK_URL}/invite/${partyId}?user=1`;
 
     window.Kakao.Share.sendDefault({
-        objectType: 'feed', // 피드 타입 (이미지 + 텍스트 + 버튼)
+        objectType: 'feed',
         content: {
             title: `✉️ [${senderName}]님이 초대장을 보냈어요!`,
             description: `"${partyTitle}" 파티에 당신을 초대합니다. 지금 바로 확인해보세요!`,

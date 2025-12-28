@@ -91,7 +91,11 @@ const PartyCard: React.FC<PartyCardProps> = ({ party }) => {
             {isMember ? '파티 입장' : '파티 구경하기'}
           </button>
         </Link>
-        <InviteButton />
+        <InviteButton
+          senderName={hostName}
+          partyTitle={partyName}
+          partyId={id}
+        />
       </div>
     </div>
   );
