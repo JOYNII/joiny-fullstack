@@ -20,22 +20,30 @@ const apiProxy = createProxyMiddleware({
 });
 
 app.prepare().then(() => {
-  https
-    .createServer(
-      {
-        key: fs.readFileSync(keyPath),
-        cert: fs.readFileSync(certPath),
-      },
-      (req, res) => {
-        if (req.url.startsWith("/api") || req.url.startsWith("/socket.io")) {
-          return apiProxy(req, res);
-        }
-        return handle(req, res);
+  const server = https.createServer(
+    {
+      key: fs.readFileSync(keyPath),
+      cert: fs.readFileSync(certPath),
+    },
+    (req, res) => {
+      // API or Socket.IO requests go to Django (8000)
+      if (req.url.startsWith("/api") || req.url.startsWith("/socket.io")) {
+        return apiProxy(req, res);
       }
-    )
-    .on('upgrade', apiProxy.upgrade) // Handle WebSocket upgrades
-    .listen(3000, "0.0.0.0", () => {
-      console.log("✅ HTTPS Next.js dev server running");
-      console.log("👉 https://localhost:3000");
-    });
+      return handle(req, res);
+    }
+  );
+
+  server.on('upgrade', (req, socket, head) => {
+    // Only upgrade socket.io requests to Django
+    if (req.url.startsWith('/socket.io')) {
+      apiProxy.upgrade(req, socket, head);
+    }
+    // _next/webpack-hmr is NOT handled here, so it stays with Next.js
+  });
+
+  server.listen(3000, "0.0.0.0", () => {
+    console.log("✅ HTTPS Next.js dev server running (Socket -> Django:8000)");
+    console.log("👉 https://localhost:3000");
+  });
 });

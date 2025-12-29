@@ -25,7 +25,7 @@ export default function FriendMapPage() {
 
     // Initialize Kakao Map Loader
     const [loading, error] = useKakaoLoader({
-        appkey: process.env.NEXT_PUBLIC_KAKAOMAP_APP_KEY!,
+        appkey: process.env.NEXT_PUBLIC_KAKAO_JS_KEY!,
         libraries: ['services'],
     });
 
@@ -81,11 +81,14 @@ export default function FriendMapPage() {
                 });
             },
             (error) => {
-                console.error('Error getting location:', error);
+                console.error(`Error getting location (Code ${error.code}): ${error.message}`);
+                // Code 1: Permission Denied
+                // Code 2: Position Unavailable
+                // Code 3: Timeout
             },
             {
                 enableHighAccuracy: true,
-                timeout: 5000,
+                timeout: 20000,
                 maximumAge: 0,
             }
         );

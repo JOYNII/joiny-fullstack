@@ -24,7 +24,7 @@ async def join_party(sid, data):
     """
     party_id = data.get('party_id')
     if party_id:
-        sio.enter_room(sid, f"party_{party_id}")
+        await sio.enter_room(sid, f"party_{party_id}")
         await sio.emit('response', {'message': f'Joined party {party_id}'}, room=sid)
         print(f"Client {sid} joined party_{party_id}")
 
@@ -32,7 +32,7 @@ async def join_party(sid, data):
 async def leave_party(sid, data):
     party_id = data.get('party_id')
     if party_id:
-        sio.leave_room(sid, f"party_{party_id}")
+        await sio.leave_room(sid, f"party_{party_id}")
         await sio.emit('response', {'message': f'Left party {party_id}'}, room=sid)
 
 @sio.event
