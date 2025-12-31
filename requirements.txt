@@ -108,3 +108,4 @@ Wikipedia-API==0.7.1
 wordcloud==1.9.3
 wsproto==1.2.0
 python-socketio==5.11.0
+djangorestframework-simplejwt==5.3.1

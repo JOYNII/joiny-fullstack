@@ -3,10 +3,14 @@
 export interface User {
   id: string;
   name: string;
+  email?: string;
+  image?: string;
+  participantId?: number; // 파티 참여 ID (삭제 시 필요)
 }
 
+
 export interface Party {
-  id:string;
+  id: string;
   theme: string | null;
   hostName: string;
   partyName: string;

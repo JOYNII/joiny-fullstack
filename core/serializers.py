@@ -1,6 +1,8 @@
 # core/serializers.py
 from rest_framework import serializers
 from .models import Event, Participant, Todo, Theme # Theme 모델 import
+from django.contrib.auth.models import User
+
 
 # ----------------------------------------------------
 # Theme Serializer 추가
@@ -10,6 +12,35 @@ class ThemeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Theme
         fields = '__all__'
+
+
+# ----------------------------------------------------
+# User Serializer (사용자 정보 조회)
+# ----------------------------------------------------
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email']
+
+
+# ----------------------------------------------------
+# Register Serializer (회원가입)
+# ----------------------------------------------------
+class RegisterSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(required=True)
+    password = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'password']
+
+    def create(self, validated_data):
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            email=validated_data['email'],
+            password=validated_data['password']
+        )
+        return user
 
 
 # ----------------------------------------------------

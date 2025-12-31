@@ -12,8 +12,9 @@ const PartyCard: React.FC<PartyCardProps> = ({ party }) => {
   const { id, partyName, partyDescription, members, maxMembers, date, hostName } = party;
   const currentUser = getCurrentUser();
 
-  const isHost = hostName === currentUser.name;
-  const isMember = members?.some(member => member.id === currentUser.id);
+  const isHost = currentUser && hostName === currentUser.name;
+  const isMember = currentUser && members?.some(member => member.id === currentUser.id);
+
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.preventDefault(); // 링크 이동 방지

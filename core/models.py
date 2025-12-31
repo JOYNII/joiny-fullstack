@@ -1,5 +1,7 @@
 import uuid
 from django.db import models
+from django.contrib.auth.models import User
+
 
 # ----------------------------------------------------
 # 1. Theme 모델 (테마 선택 화면 데이터 제공)
@@ -43,7 +45,9 @@ class Event(models.Model):
 
 class Participant(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True) # User 모델 연결 (기존 데이터 호환 위해 null 허용)
     name = models.CharField(max_length=100)
+
 
     def __str__(self):
         return self.name

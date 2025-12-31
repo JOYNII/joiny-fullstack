@@ -3,7 +3,13 @@ import { useQuery } from "@tanstack/react-query";
 import React, { useState } from "react";
 import PartyCard from "../../components/PartyCard";
 import PageHeader from "../../components/PageHeader";
-import { getParties, getCurrentUser } from "../../utils/api";
+import { getParties, getCurrentUser, logout } from "../../utils/api";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { User } from "../../types";
+
+
+
 import { Party } from "../../types";
 import ThemeSelectionModal from './components/ThemeSelectionModal';
 
@@ -13,6 +19,19 @@ const HomePage = () => {
     queryFn: getParties
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+
+  React.useEffect(() => {
+    setUser(getCurrentUser());
+
+    const handleStorageChange = () => {
+      setUser(getCurrentUser());
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
 
   const handleCreateNewPartyClick = () => {
     setIsModalOpen(true);
@@ -22,12 +41,38 @@ const HomePage = () => {
     setIsModalOpen(false);
   };
 
+  const router = useRouter();
+  const handleLogout = () => {
+    logout();
+    router.replace('/auth/login/email');
+  };
+
+
   return (
     <div className="bg-neutral-50 text-gray-900 p-6 md:p-12 lg:p-20">
       <PageHeader
         title="Myparty"
         subtitle="내가 가입한 파티, 그리고 새로운 시작."
       />
+      <div className="absolute top-6 right-6 md:top-12 md:right-12 flex gap-3">
+        {user ? (
+          <button
+            onClick={handleLogout}
+            className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full text-sm font-medium transition-colors duration-200"
+          >
+            로그아웃
+          </button>
+        ) : (
+          <Link
+            href="/auth/login/email"
+            className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-sm font-bold shadow-md transition-all duration-200"
+          >
+            로그인
+          </Link>
+        )}
+      </div>
+
+
 
       <section className="mb-16">
         <div className="flex justify-between items-center mb-8">

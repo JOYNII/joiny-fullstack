@@ -1,61 +1,144 @@
 // src/utils/api.ts
 import { Party, User } from '../types';
-const API_BASE_URL = '/api';
 
-const MOCK_USERS: User[] = [
-  { id: 'user1', name: '김조이' },
-  { id: 'user2', name: '박개발' },
-  { id: 'user3', name: '최디자' },
-];
-
-const CURRENT_USER: User = MOCK_USERS[0];
+const API_BASE_URL = 'http://localhost:8000/api'; // Django API Server
 
 // =============================================================================
-// [MOCK STORAGE HELPER] - 세션 스토리지 기반 (새로고침 시 유지)
+// [AUTH & TOKEN MANAGEMENT]
 // =============================================================================
-const STORAGE_KEY_PARTIES = 'MOCK_PARTIES_DATA';
-const STORAGE_KEY_MEMBERS = 'MOCK_MEMBERS_DATA';
+const TOKEN_KEY = 'ACCESS_TOKEN';
+const REFRESH_KEY = 'REFRESH_TOKEN';
+const USER_KEY = 'USER_INFO';
 
-const getStoredParties = (): Party[] | null => {
-  if (typeof window === 'undefined') return null;
-  const stored = sessionStorage.getItem(STORAGE_KEY_PARTIES);
-  return stored ? JSON.parse(stored) : null;
-};
-
-const setStoredParties = (parties: Party[]) => {
+export const setTokens = (connect: { access: string; refresh: string; user: User }) => {
   if (typeof window !== 'undefined') {
-    sessionStorage.setItem(STORAGE_KEY_PARTIES, JSON.stringify(parties));
+    localStorage.setItem(TOKEN_KEY, connect.access);
+    localStorage.setItem(REFRESH_KEY, connect.refresh);
+    localStorage.setItem(USER_KEY, JSON.stringify(connect.user));
+    // Trigger storage event for cross-tab or same-tab sync if needed
+    window.dispatchEvent(new Event('storage'));
   }
 };
+
+export const clearTokens = () => {
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(REFRESH_KEY);
+    localStorage.removeItem(USER_KEY);
+    window.dispatchEvent(new Event('storage'));
+  }
+};
+
+export const getAccessToken = () => {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem(TOKEN_KEY);
+  }
+  return null;
+};
+
+export const getCurrentUser = (): User | null => {
+  if (typeof window === 'undefined') return null;
+  const userStr = localStorage.getItem(USER_KEY);
+  return userStr ? JSON.parse(userStr) : null;
+};
+
+export const logout = () => {
+  clearTokens();
+  // Redirect to home or login page handled by component
+};
+
+const getAuthHeaders = () => {
+  const token = getAccessToken();
+  return token ? { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
+};
+
+// =============================================================================
+// [AUTH API]
 // =============================================================================
 
-export const getCurrentUser = (): User => {
-  if (typeof window === 'undefined') return CURRENT_USER;
-  const params = new URLSearchParams(window.location.search);
-  const userId = params.get('user');
-  if (userId) {
-    const userIndex = parseInt(userId, 10) - 1;
-    if (userIndex >= 0 && userIndex < MOCK_USERS.length) return MOCK_USERS[userIndex];
+export const loginEmail = async (email: string, password: string): Promise<User> => {
+  const response = await fetch(`${API_BASE_URL}/auth/login/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: email, password }), // Using email as username for simplejwt if configured, or adjust backend
+  });
+
+  // Note: Standard SimpleJWT expects 'username' and 'password'. 
+  // If your User model uses 'email' as username or you customized it, adjust accordingly.
+  // Django default User model uses 'username'. 
+  // If we want to login with email, we might need to customize backend or just send email as username if they are same.
+  // For this MVP, let's assume we send 'username' as the field name but put email in it if the backend supports it, 
+  // OR the user inputs username. 
+  // *Correction*: The plan said Login with Email. 
+  // If we used default User model, we need to authenticate with username. 
+  // Let's assume the user enters their username in the "Email" field for now, OR we need a backend custom auth backend.
+  // To keep it simple for now, we will send the input as 'username'. 
+
+  if (!response.ok) {
+    throw new Error('Login failed');
   }
-  return CURRENT_USER;
+
+  const data = await response.json();
+  // data = { access, refresh }
+  // We also need user info. Let's fetch it or the login view should return it.
+  // Standard SimpleJWT doesn't return user info. 
+  // But wait, my RegisterView returns user info! 
+  // The LoginView (TokenObtainPairView) does NOT by default.
+  // We need to fetch user info separately or customize TokenObtainPairView.
+  // Let's fetch user info separately for now.
+
+  const accessToken = data.access;
+  const refreshToken = data.refresh;
+
+  // Fetch User Info
+  const userResponse = await fetch(`${API_BASE_URL}/auth/user/`, {
+    headers: { 'Authorization': `Bearer ${accessToken}` }
+  });
+
+  if (!userResponse.ok) {
+    throw new Error('Failed to fetch user info');
+  }
+
+  const userData = await userResponse.json();
+  const user: User = { id: userData.id, name: userData.username, email: userData.email };
+
+  setTokens({ access: accessToken, refresh: refreshToken, user });
+  return user;
 };
+
+export const registerEmail = async (name: string, email: string, password: string): Promise<User> => {
+  const response = await fetch(`${API_BASE_URL}/auth/register/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: name, email, password }),
+  });
+
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(JSON.stringify(err));
+  }
+
+  const data = await response.json();
+  // data = { user, access, refresh } from my custom RegisterView
+
+  const user: User = { id: data.user.id, name: data.user.username, email: data.user.email };
+  setTokens({ access: data.access, refresh: data.refresh, user });
+
+  return user;
+};
+
+// =============================================================================
+// [DATA API]
+// =============================================================================
 
 export const getParties = async (): Promise<Party[]> => {
-  // 1. 세션 스토리지에 데이터가 있으면 그거 리턴 (새로고침해도 유지됨!)
-  const cachedParties = getStoredParties();
-
-  if (cachedParties) {
-    console.log('[MOCK API] Returning cached parties from SessionStorage');
-    await new Promise(r => setTimeout(r, 200));
-    return Promise.resolve(cachedParties);
-  }
-
-  // 2. 없으면 백엔드에서 초기 데이터 가져오기
   try {
-    const response = await fetch(`${API_BASE_URL}/events/`);
+    const response = await fetch(`${API_BASE_URL}/events/`, {
+      headers: getAuthHeaders(),
+    });
     if (response.ok) {
       const data = await response.json();
-      const mappedParties = data.map((party: any) => ({
+      return data.map((party: any) => ({
         id: party.id,
         partyName: party.name,
         partyDescription: party.description,
@@ -65,39 +148,28 @@ export const getParties = async (): Promise<Party[]> => {
         maxMembers: party.max_members,
         hostName: party.host_name,
         fee: party.fee,
-        members: party.members || [],
+        members: (party.members || []).map((m: any) => ({
+          id: m.user ? String(m.user) : `guest-${m.id}`, // User ID를 id로 사용 (없으면 임시 ID)
+          name: m.name,
+          participantId: m.id // 삭제를 위한 Participant ID
+        })),
         theme: party.theme,
       }));
-
-      // 스토리지에 저장!
-      setStoredParties(mappedParties);
-      console.log('[MOCK API] Initialized storage from backend');
-      return mappedParties;
     }
   } catch (e) {
-    console.warn('[MOCK API] Failed to fetch, using empty list', e);
+    console.warn('[API] Failed to fetch parties', e);
   }
-
   return [];
 };
 
 export const getPartyById = async (id: string): Promise<Party | undefined> => {
-  // 1. 스토리지에서 먼저 찾기 (삭제된 파티인지 확인 가능)
-  const cachedParties = getStoredParties();
-  if (cachedParties) {
-    const found = cachedParties.find(p => p.id.toString() === id);
-    if (found) return found;
-  }
-
-  // 2. 없으면 백엔드 (혹은 에러)
-  const response = await fetch(`${API_BASE_URL}/events/${id}/`);
+  const response = await fetch(`${API_BASE_URL}/events/${id}/`, {
+    headers: getAuthHeaders(),
+  });
   if (!response.ok) {
-    if (response.status === 404) return undefined;
-    throw new Error('Failed to fetch party');
+    return undefined;
   }
   const party = await response.json();
-  if (!party) return undefined;
-
   return {
     id: party.id,
     partyName: party.name,
@@ -108,13 +180,16 @@ export const getPartyById = async (id: string): Promise<Party | undefined> => {
     maxMembers: party.max_members,
     hostName: party.host_name,
     fee: party.fee,
-    members: party.members || [],
+    members: (party.members || []).map((m: any) => ({
+      id: m.user ? String(m.user) : `guest-${m.id}`,
+      name: m.name,
+      participantId: m.id
+    })),
     theme: party.theme,
   };
 };
 
 export const createParty = async (partyData: Omit<Party, 'id' | 'members'>): Promise<Party> => {
-  // ... 기존 코드 (createParty는 중요도가 낮으므로 간략화하지만, Mock 목록에 추가하는 로직 넣으면 좋음)
   const payload = {
     name: partyData.partyName,
     description: partyData.partyDescription,
@@ -125,12 +200,12 @@ export const createParty = async (partyData: Omit<Party, 'id' | 'members'>): Pro
     host_name: partyData.hostName,
     fee: partyData.fee,
     max_members: partyData.maxMembers,
-    latitude: 37.5665, longitude: 126.9780, place_id: 'mock'
+    latitude: 37.5665, longitude: 126.9780, place_id: 'mock' // Default or passed
   };
 
   const response = await fetch(`${API_BASE_URL}/events/`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders(),
     body: JSON.stringify(payload),
   });
 
@@ -138,15 +213,7 @@ export const createParty = async (partyData: Omit<Party, 'id' | 'members'>): Pro
 
   const newPartyData = await response.json();
 
-  // [MOCK] 생성된 파티를 스토리지에도 추가 (화면 반영을 위해)
-  // 호스트(나)를 첫 번째 멤버로 자동 추가
-  const currentUser = getCurrentUser();
-  const hostMember: User = {
-    id: currentUser.id || 'unknown',
-    name: newPartyData.host_name || currentUser.name || 'Host'
-  };
-
-  const mappedNewParty: Party = {
+  return {
     id: newPartyData.id,
     partyName: newPartyData.name,
     partyDescription: newPartyData.description,
@@ -156,65 +223,46 @@ export const createParty = async (partyData: Omit<Party, 'id' | 'members'>): Pro
     maxMembers: newPartyData.max_members,
     hostName: newPartyData.host_name,
     fee: newPartyData.fee,
-    members: [hostMember], // Host added automatically
+    members: [],
     theme: newPartyData.theme,
   };
-
-  const currentParties = getStoredParties() || [];
-  currentParties.push(mappedNewParty);
-  setStoredParties(currentParties);
-  console.log('[MOCK API] New party added to storage:', mappedNewParty);
-
-  return mappedNewParty;
 };
 
 export const joinParty = async (partyId: string, userId: string): Promise<void> => {
-  // [MOCK] 스토리지 데이터 수정
-  console.log('[MOCK API] Toggling join/leave...');
-  await new Promise(r => setTimeout(r, 300));
+  const response = await fetch(`${API_BASE_URL}/participants/`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ event: partyId }),
+  });
 
-  const parties = getStoredParties() || [];
-  const party = parties.find(p => p.id.toString() === partyId);
-
-  if (party) {
-    const idx = party.members.findIndex(m => m.id === userId);
-    if (idx >= 0) {
-      party.members.splice(idx, 1); // 제거
-    } else {
-      const mockUser = MOCK_USERS.find(u => u.id === userId) || { id: userId, name: 'User' };
-      party.members.push(mockUser); // 추가
-    }
-    setStoredParties(parties); // 저장
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || errorData.error || 'Failed to join party');
   }
+  return Promise.resolve();
+};
 
+export const leaveParty = async (participantId: number): Promise<void> => {
+  const response = await fetch(`${API_BASE_URL}/participants/${participantId}/`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to leave party');
+  }
   return Promise.resolve();
 };
 
 export const deleteParty = async (partyId: string): Promise<void> => {
-  console.log(`[API] Deleting Party: ${partyId} from backend...`);
-
-  // [BACKEND] 실제 API 호출
   const response = await fetch(`${API_BASE_URL}/events/${partyId}/`, {
     method: 'DELETE',
+    headers: getAuthHeaders(),
   });
 
   if (!response.ok) {
-    // 에러 처리 (상세 에러 로그)
-    const errorText = await response.text();
-    console.error('Delete failed:', errorText);
     throw new Error('Failed to delete party');
   }
-
-  // [SYNC] 성공 시 로컬 Mock 스토리지에서도 삭제 (화면 갱신용)
-  // (나중에 getParties가 완전히 백엔드만 본다면 이 부분은 없어도 됨)
-  let parties = getStoredParties() || [];
-  const initialLength = parties.length;
-  parties = parties.filter(p => p.id.toString() !== partyId.toString());
-
-  if (parties.length !== initialLength) {
-    setStoredParties(parties);
-    console.log('[API] Party deleted locally for sync.');
-  }
-
   return Promise.resolve();
 };
+

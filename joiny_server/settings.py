@@ -33,7 +33,8 @@ try:
 except socket.gaierror:
     ip_address = '127.0.0.1' # Fallback
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', ip_address, '.ngrok-free.app']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', ip_address, '.ngrok-free.app', '.ngrok-free.dev']
+
 
 # Instruct Django to trust the X-Forwarded-Proto header from the proxy
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -51,7 +52,22 @@ INSTALLED_APPS = [
     'rest_framework',
     'core',
     'corsheaders',
+    'rest_framework_simplejwt',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}
+
+from datetime import timedelta
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -66,7 +82,9 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGIN_REGEXES = [
     r"^https://.*\.ngrok-free\.app$",
+    r"^https://.*\.ngrok-free\.dev$",
 ]
+
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
@@ -115,7 +133,14 @@ DATABASES = {
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
+# Authentication Backends
+AUTHENTICATION_BACKENDS = [
+    'core.authentication.EmailBackend',  # 이메일 로그인 지원
+    'django.contrib.auth.backends.ModelBackend', # 기본 사용자 이름 로그인 지원
+]
+
 AUTH_PASSWORD_VALIDATORS = [
+
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
     },
