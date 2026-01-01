@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getPartyById, getCurrentUser, joinParty } from "../../../utils/api";
 import PleaseLogin from "../../../components/PleaseLogin";
@@ -31,7 +31,7 @@ export default function InvitationLandingPage() {
             queryClient.invalidateQueries({ queryKey: ['parties'] });
 
             // 2. 즉시 파티 상세 페이지로 이동
-            router.push(`/friend-location/map/${id}`);
+            router.push(`/party/${id}`);
         },
         onError: (err) => {
             alert("초대 수락에 실패했습니다: " + err);
@@ -99,7 +99,7 @@ export default function InvitationLandingPage() {
                         </div>
                         <div className="flex items-center justify-between text-sm">
                             <span className="text-gray-500">Theme</span>
-                            <span className={`font - medium px - 2 py - 0.5 rounded - full text - xs ${getThemeColor(party.theme)} `}>
+                            <span className={`font-medium px-2 py-0.5 rounded-full text-xs ${getThemeColor(party.theme)}`}>
                                 {party.theme || 'Party'}
                             </span>
                         </div>
@@ -135,23 +135,22 @@ function getThemeColor(theme?: string) {
     return 'bg-purple-100 text-purple-600';
 }
 
-// Styles for Blob & FadeIn (Confetti removed)
-// *주의: 실제 프로덕션에서는 tailwind.config.js에 추가하는 것이 좋음.
+// Styles for Blob & FadeIn
 const styles = `
 @keyframes blob {
-    0 % { transform: translate(0px, 0px) scale(1); }
-    33 % { transform: translate(30px, -50px) scale(1.1); }
-    66 % { transform: translate(-20px, 20px) scale(0.9); }
-    100 % { transform: translate(0px, 0px) scale(1); }
+    0% { transform: translate(0px, 0px) scale(1); }
+    33% { transform: translate(30px, -50px) scale(1.1); }
+    66% { transform: translate(-20px, 20px) scale(0.9); }
+    100% { transform: translate(0px, 0px) scale(1); }
 }
-.animate - blob {
+.animate-blob {
     animation: blob 7s infinite;
 }
-.animation - delay - 2000 {
-    animation - delay: 2s;
+.animation-delay-2000 {
+    animation-delay: 2s;
 }
-.animation - delay - 4000 {
-    animation - delay: 4s;
+.animation-delay-4000 {
+    animation-delay: 4s;
 }
 
 @keyframes fadeInUp {
