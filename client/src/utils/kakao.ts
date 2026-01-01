@@ -37,7 +37,7 @@ export const shareInvitation = (
     }
 
     const NGROK_URL = 'https://estell-supereffective-selena.ngrok-free.dev';
-    const shareUrl = `${NGROK_URL}/invite/${partyId}?user=1`;
+    const shareUrl = `${NGROK_URL}/invite/${partyId}`;
 
     window.Kakao.Share.sendDefault({
         objectType: 'feed',

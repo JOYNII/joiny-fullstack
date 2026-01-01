@@ -1,10 +1,13 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PageHeader from '../../components/PageHeader';
 import { UserCircleIcon as UserCircleIconSolid } from '@heroicons/react/24/solid';
 import FriendListItem from './componenets/FriendListen';
 import FriendRequestItem from './componenets/FriendRequestItem';
+import { getCurrentUser } from '../../utils/api';
+import PleaseLogin from '../../components/PleaseLogin';
+import { User } from '../../types';
 
 // Mock Data
 const myProfile = {
@@ -25,6 +28,24 @@ const friendRequests = [
 
 const FriendsPage = () => {
   const [activeTab, setActiveTab] = useState('friends'); // 'friends' or 'requests'
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Check login status
+    const userData = getCurrentUser();
+    setUser(userData);
+    setLoading(false);
+
+    const handleStorageChange = () => {
+      setUser(getCurrentUser());
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  if (loading) return null; // Or a loading spinner
+  if (!user) return <PleaseLogin />;
 
   return (
     <div className="bg-neutral-50 text-gray-900 p-6 md:p-12 lg:p-20">

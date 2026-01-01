@@ -11,22 +11,13 @@ import { User } from "../../types";
 export default function MyPage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const searchParams = useSearchParams();
-  const router = useRouter(); // Import useRouter at top level if not imported
-
-
+  const router = useRouter();
   useEffect(() => {
-    // URL 파라미터가 변경될 때마다 유저 정보를 다시 가져옴
+    // 유저 정보 가져오기
     const currentUser = getCurrentUser();
-    const hasUserParam = searchParams.get("user");
-
-    if (hasUserParam) {
-      setUser(currentUser);
-    } else {
-      setUser(null);
-    }
+    setUser(currentUser);
     setLoading(false);
-  }, [searchParams]);
+  }, []);
 
   if (loading) {
     return <div>Loading...</div>; // Or a proper skeleton/spinner

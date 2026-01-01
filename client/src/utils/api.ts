@@ -100,7 +100,7 @@ export const loginEmail = async (email: string, password: string): Promise<User>
   }
 
   const userData = await userResponse.json();
-  const user: User = { id: userData.id, name: userData.username, email: userData.email };
+  const user: User = { id: String(userData.id), name: userData.username, email: userData.email };
 
   setTokens({ access: accessToken, refresh: refreshToken, user });
   return user;
@@ -121,7 +121,7 @@ export const registerEmail = async (name: string, email: string, password: strin
   const data = await response.json();
   // data = { user, access, refresh } from my custom RegisterView
 
-  const user: User = { id: data.user.id, name: data.user.username, email: data.user.email };
+  const user: User = { id: String(data.user.id), name: data.user.username, email: data.user.email };
   setTokens({ access: data.access, refresh: data.refresh, user });
 
   return user;

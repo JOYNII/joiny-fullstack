@@ -73,8 +73,6 @@ const UserIcon = () => (
 
 const BottomNavBar = () => {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const queryString = searchParams.toString();
   const [user, setUser] = React.useState<User | null>(null);
 
   React.useEffect(() => {
@@ -86,47 +84,39 @@ const BottomNavBar = () => {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-
-  const createHref = (path: string) => {
-    return `${path}${queryString ? `?${queryString}` : ""}`;
-  };
   return (
     <nav className="fixed bottom-0 left-0 right-0 h-20 bg-white border-t border-gray-200 shadow-[0_-1px_10px_rgba(0,0,0,0.05)]">
       <div className="flex justify-around items-center h-full max-w-lg mx-auto">
         <Link
-          href={createHref("/home")}
-          className={`flex flex-col items-center justify-center hover:text-blue-500 transition-colors ${user ? "w-1/4" : "w-1/2"} ${pathname === "/home" ? "text-blue-500" : "text-gray-600"
+          href="/home"
+          className={`flex flex-col items-center justify-center hover:text-blue-500 transition-colors w-1/4 ${pathname === "/home" ? "text-blue-500" : "text-gray-600"
             }`}
         >
           <HomeIcon />
           <span className="text-xs font-medium">홈</span>
         </Link>
 
-        {user && (
-          <>
-            <Link
-              href={createHref("/friend-location")}
-              className={`flex flex-col items-center justify-center hover:text-blue-500 transition-colors w-1/4 ${pathname === "/friend-location" ? "text-blue-500" : "text-gray-600"
-                }`}
-            >
-              <ThemeIcon />
-              <span className="text-xs font-medium">친구위치</span>
-            </Link>
-
-            <Link
-              href={createHref("/friends")}
-              className={`flex flex-col items-center justify-center hover:text-blue-500 transition-colors w-1/4 ${pathname === "/friends" ? "text-blue-500" : "text-gray-600"
-                }`}
-            >
-              <UserIcon />
-              <span className="text-xs font-medium">친구목록</span>
-            </Link>
-          </>
-        )}
+        <Link
+          href="/friend-location"
+          className={`flex flex-col items-center justify-center hover:text-blue-500 transition-colors w-1/4 ${pathname === "/friend-location" ? "text-blue-500" : "text-gray-600"
+            }`}
+        >
+          <ThemeIcon />
+          <span className="text-xs font-medium">친구위치</span>
+        </Link>
 
         <Link
-          href={createHref("/mypage")}
-          className={`flex flex-col items-center justify-center hover:text-blue-500 transition-colors ${user ? "w-1/4" : "w-1/2"} ${pathname === "/mypage" ? "text-blue-500" : "text-gray-600"
+          href="/friends"
+          className={`flex flex-col items-center justify-center hover:text-blue-500 transition-colors w-1/4 ${pathname === "/friends" ? "text-blue-500" : "text-gray-600"
+            }`}
+        >
+          <PlusCircleIcon />
+          <span className="text-xs font-medium">친구목록</span>
+        </Link>
+
+        <Link
+          href="/mypage"
+          className={`flex flex-col items-center justify-center hover:text-blue-500 transition-colors w-1/4 ${pathname === "/mypage" ? "text-blue-500" : "text-gray-600"
             }`}
         >
           <UserIcon />

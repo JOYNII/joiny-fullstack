@@ -9,7 +9,6 @@ import PleaseLogin from "../../../components/PleaseLogin";
 export default function InvitationLandingPage() {
     const { id } = useParams();
     const router = useRouter();
-    const searchParams = useSearchParams(); // 쿼리 파라미터 가져오기
     const queryClient = useQueryClient();
     const [showLoginModal, setShowLoginModal] = useState(false);
 
@@ -32,9 +31,7 @@ export default function InvitationLandingPage() {
             queryClient.invalidateQueries({ queryKey: ['parties'] });
 
             // 2. 즉시 파티 상세 페이지로 이동
-            const queryString = searchParams.toString();
-            const targetUrl = `/party/${id}${queryString ? `?${queryString}` : ''} `;
-            router.push(targetUrl);
+            router.push(`/friend-location/map/${id}`);
         },
         onError: (err) => {
             alert("초대 수락에 실패했습니다: " + err);
@@ -44,16 +41,12 @@ export default function InvitationLandingPage() {
     const handleAcceptClick = () => {
         // 1. 로그인 체크
         const user = getCurrentUser();
-        if (!user || !user.id || user.id === 'unknown') {
-            // 우리 Mock 시스템에서 비로그인 상태는 보통 user 파라미터가 없을 때
-            const params = new URLSearchParams(window.location.search);
-            if (!params.has('user')) {
-                setShowLoginModal(true);
-                return;
-            }
+        if (!user) {
+            setShowLoginModal(true);
+            return;
         }
 
-        // 2. 초대 수락 (Mock API)
+        // 2. 초대 수락
         acceptInvitation();
     };
 

@@ -3,24 +3,38 @@
 import React, { useEffect, useState } from 'react';
 import PageHeader from '../../components/PageHeader';
 import { getParties, getCurrentUser } from '../../utils/api';
-import { Party } from '../../types';
+import { Party, User } from '../../types';
 import Link from 'next/link';
+import PleaseLogin from '../../components/PleaseLogin';
 
 export default function FriendLocationPage() {
     const [parties, setParties] = useState<Party[]>([]);
-    const currentUser = getCurrentUser();
+    const [user, setUser] = useState<User | null>(null);
+    const [loading, setLoading] = useState(true);
 
+    // Initial User Check & Load Parties
     useEffect(() => {
-        async function loadParties() {
-            const allParties = await getParties();
-            // Filter parties where current user is a member
-            const myParties = allParties.filter(party =>
-                party.members.some(member => member.id === currentUser.id)
-            );
-            setParties(myParties);
+        const currentUser = getCurrentUser();
+        setUser(currentUser);
+        setLoading(false);
+
+        if (currentUser) {
+            loadParties(currentUser);
         }
-        loadParties();
-    }, [currentUser.id]);
+
+        async function loadParties(currentUser: User) {
+            try {
+                const allParties = await getParties();
+                // Filter parties where current user is a member
+                const myParties = allParties.filter(party =>
+                    party.members.some(member => member.id === currentUser.id)
+                );
+                setParties(myParties);
+            } catch (error) {
+                console.error("Failed to load parties", error);
+            }
+        }
+    }, []);
 
     // Handle tracking toggle
     const [trackingStates, setTrackingStates] = useState<Record<string, boolean>>({});
@@ -39,6 +53,9 @@ export default function FriendLocationPage() {
         setTrackingStates(newStates);
         localStorage.setItem('trackingStates', JSON.stringify(newStates));
     };
+
+    if (loading) return null;
+    if (!user) return <PleaseLogin />;
 
     return (
         <div className="pb-24">

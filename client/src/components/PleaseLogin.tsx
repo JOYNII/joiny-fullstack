@@ -12,21 +12,16 @@ export default function PleaseLogin() {
         </div>
         <div className="space-y-4">
           <Link
-            href="/mypage?user=1" // [TEST] Simulate login as user 1 and go to mypage
-            className="block w-full px-6 py-4 text-center font-bold text-gray-800 bg-yellow-300 rounded-xl hover:bg-yellow-400 transition-colors shadow-sm text-lg"
+            href="/auth/login/email"
+            className="block w-full px-6 py-4 text-center font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors shadow-sm text-lg"
           >
-            카카오로 로그인
+            이메일로 로그인
           </Link>
-          <div className="flex justify-center space-x-4 mt-2">
+          <div className="flex justify-center mt-4">
+            <span className="text-gray-500 text-sm mr-2">계정이 없으신가요?</span>
             <Link
-              href="/auth/login/email" // Replace with actual email login page
-              className="text-sm text-gray-600 hover:text-gray-800 transition-colors"
-            >
-              이메일로 로그인
-            </Link>
-            <Link
-              href="/auth/register/email" // Replace with actual email registration page
-              className="text-sm text-gray-600 hover:text-gray-800 transition-colors"
+              href="/auth/register/email"
+              className="text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors"
             >
               이메일로 회원가입
             </Link>

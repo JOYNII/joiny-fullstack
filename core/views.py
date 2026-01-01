@@ -23,6 +23,19 @@ class EventViewSet(viewsets.ModelViewSet):
         # 인증 기능 추가 후에는 request.user를 사용해 필터링해야 합니다.
         return Event.objects.all().order_by('-date')
 
+    def perform_create(self, serializer):
+        # 파티 생성 시 현재 로그인한 유저를 호스트로 파티 저장 후, 참가자로 자동 등록
+        host_name = self.request.user.username if self.request.user.is_authenticated else "Guest"
+        event = serializer.save(host_name=host_name)
+        
+        # 생성자를 참가자(호스트)로 추가
+        if self.request.user.is_authenticated:
+            Participant.objects.create(
+                event=event, 
+                user=self.request.user, 
+                name=host_name
+            )
+
     # 초대 코드를 통해 이벤트를 조회하는 커스텀 액션
     @action(detail=False, methods=['get'], url_path='by_invite_code/(?P<invite_code>[^/.]+)')
     def retrieve_by_invite_code(self, request, invite_code=None):
