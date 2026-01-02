@@ -47,7 +47,7 @@ export default function PartyChat({ partyId, isFullScreen = false }: PartyChatPr
             socket.off('chat_history');
             socket.emit('leave_party', { party_id: partyId });
         };
-    }, [socket, partyId, currentUser]); // Added currentUser to dependencies
+    }, [socket, partyId, currentUser?.id]); // Added currentUser to dependencies
 
     // Focus input on mount
     useEffect(() => {
