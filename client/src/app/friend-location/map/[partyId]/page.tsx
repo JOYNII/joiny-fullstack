@@ -3,8 +3,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { Map, MapMarker, useKakaoLoader } from 'react-kakao-maps-sdk';
-import { io, Socket } from 'socket.io-client';
+import { useSocket } from '../../../../hooks/useSocket';
 import PageHeader from '../../../../components/PageHeader';
+import PartyChat from '../../../../components/PartyChat';
 import { getCurrentUser } from '../../../../utils/api';
 
 interface LocationData {
@@ -21,7 +22,9 @@ export default function FriendMapPage() {
     const currentUser = getCurrentUser();
     const [markers, setMarkers] = useState<Record<string, LocationData>>({});
     const [myLocation, setMyLocation] = useState<{ lat: number; lng: number } | null>(null);
-    const [socket, setSocket] = useState<Socket | null>(null);
+
+    // Connect to /location namespace
+    const { socket, isConnected } = useSocket('/location');
 
     // Initialize Kakao Map Loader
     const [loading, error] = useKakaoLoader({
@@ -29,16 +32,13 @@ export default function FriendMapPage() {
         libraries: ['services'],
     });
 
-    // Socket Connection
+    // Socket Interactions
     useEffect(() => {
-        const socketInstance = io(); // Connects to current host/proxy
+        if (!socket) return;
 
-        socketInstance.on('connect', () => {
-            console.log('Socket Connected:', socketInstance.id);
-            socketInstance.emit('join_party', { party_id: partyId });
-        });
+        socket.emit('join_party', { party_id: partyId });
 
-        socketInstance.on('location_update', (data: LocationData) => {
+        socket.on('location_update', (data: LocationData) => {
             // Assuming backend broadcasts to others (skip_sid used in server)
             setMarkers((prev) => ({
                 ...prev,
@@ -46,12 +46,11 @@ export default function FriendMapPage() {
             }));
         });
 
-        setSocket(socketInstance);
-
         return () => {
-            socketInstance.disconnect();
+            socket.off('location_update');
+            socket.emit('leave_party', { party_id: partyId });
         };
-    }, [partyId]);
+    }, [socket, partyId]);
 
     // Geolocation Tracking
     useEffect(() => {
@@ -82,9 +81,6 @@ export default function FriendMapPage() {
             },
             (error) => {
                 console.error(`Error getting location (Code ${error.code}): ${error.message}`);
-                // Code 1: Permission Denied
-                // Code 2: Position Unavailable
-                // Code 3: Timeout
             },
             {
                 enableHighAccuracy: true,
@@ -142,6 +138,9 @@ export default function FriendMapPage() {
                     </MapMarker>
                 ))}
             </Map>
+
+            {/* Chat Overlay */}
+            <PartyChat partyId={partyId} />
         </div>
     );
 }

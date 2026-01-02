@@ -47,6 +47,7 @@ class Participant(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True) # User 모델 연결 (기존 데이터 호환 위해 null 허용)
     name = models.CharField(max_length=100)
+    joined_at = models.DateTimeField(auto_now_add=True)
 
 
     def __str__(self):
@@ -60,3 +61,16 @@ class Todo(models.Model):
 
     def __str__(self):
         return self.task
+
+
+# ----------------------------------------------------
+# 4. ChatMessage 모델 (채팅 기록 저장)
+# ----------------------------------------------------
+class ChatMessage(models.Model):
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='messages')
+    sender = models.ForeignKey(User, on_delete=models.CASCADE)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.sender.username}: {self.message[:20]}"

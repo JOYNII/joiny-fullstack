@@ -263,15 +263,26 @@ export default function PartyDetailsPage() {
         </div>
 
         {/* FOOTER: Action Button */}
-        <div className="mt-16 text-center relative z-10">
+        <div className="mt-16 text-center relative z-10 flex flex-col items-center gap-4">
           {currentUser ? (
-            <button
-              onClick={() => toggleJoinLeave()}
-              disabled={isJoinLeavePending}
-              className={`px-12 py-4 rounded-full text-lg font-bold transition-all duration-300 transform active:scale-95 ${ui.buttonStyle(isMember, isJoinLeavePending)}`}
-            >
-              {isJoinLeavePending ? "Processing..." : isMember ? "Decline Invitation" : "Accept Invitation"}
-            </button>
+            <div className="flex gap-4">
+              <button
+                onClick={() => toggleJoinLeave()}
+                disabled={isJoinLeavePending}
+                className={`px-12 py-4 rounded-full text-lg font-bold transition-all duration-300 transform active:scale-95 ${ui.buttonStyle(isMember, isJoinLeavePending)}`}
+              >
+                {isJoinLeavePending ? "Processing..." : isMember ? "Decline Invitation" : "Accept Invitation"}
+              </button>
+
+              {isMember && (
+                <button
+                  onClick={() => window.open(`/chat/party/${id}`, 'PartyChat', 'width=400,height=600')}
+                  className="px-12 py-4 rounded-full text-lg font-bold bg-blue-600 text-white shadow-lg hover:bg-blue-700 transition-all duration-300 transform active:scale-95"
+                >
+                  Chat
+                </button>
+              )}
+            </div>
           ) : (
             <div className="inline-block px-6 py-3 rounded-lg bg-black/5 backdrop-blur-sm">
               <p className={`text-sm font-medium ${ui.bodyColor}`}>Please login to respond</p>

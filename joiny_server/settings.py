@@ -91,6 +91,12 @@ CORS_ALLOWED_ORIGINS = [
     "https://localhost:3000",
     f"http://{ip_address}:3000",
     f"https://{ip_address}:3000",
+    "https://estell-supereffective-selena.ngrok-free.dev",
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://estell-supereffective-selena.ngrok-free.dev",
+    "http://localhost:3000",
 ]
 
 ROOT_URLCONF = 'joiny_server.urls'
@@ -111,6 +117,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'joiny_server.wsgi.application'
+ASGI_APPLICATION = 'joiny_server.asgi.application'
 
 
 # Database

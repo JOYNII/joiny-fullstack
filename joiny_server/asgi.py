@@ -18,4 +18,4 @@ application = get_asgi_application()
 from .sio import sio
 import socketio
 
-application = socketio.ASGIApp(sio, application)
+application = socketio.ASGIApp(sio, application, socketio_path='/socket.io')
