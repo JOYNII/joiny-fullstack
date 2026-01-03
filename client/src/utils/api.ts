@@ -1,7 +1,7 @@
 // src/utils/api.ts
 import { Party, User, Friendship } from '../types';
 
-const API_BASE_URL = 'http://localhost:8000/api'; // Django API Server
+const API_BASE_URL = 'https://estell-supereffective-selena.ngrok-free.dev/api'; // Ngrok Tunnel URL for Mobile Access
 
 // =============================================================================
 // [AUTH & TOKEN MANAGEMENT]
