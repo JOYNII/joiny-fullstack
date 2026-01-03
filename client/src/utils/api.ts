@@ -266,6 +266,37 @@ export const deleteParty = async (partyId: string): Promise<void> => {
   return Promise.resolve();
 };
 
+export const getJoinedEvents = async (): Promise<Party[]> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/events/joined/`, {
+      headers: getAuthHeaders(),
+    });
+    if (response.ok) {
+      const data = await response.json();
+      return data.map((party: any) => ({
+        id: party.id,
+        partyName: party.name,
+        partyDescription: party.description,
+        date: party.date,
+        place: party.location_name,
+        partyFood: party.food_description,
+        maxMembers: party.max_members,
+        hostName: party.host_name,
+        fee: party.fee,
+        members: (party.members || []).map((m: any) => ({
+          id: m.user ? String(m.user) : `guest-${m.id}`,
+          name: m.name,
+          participantId: m.id
+        })),
+        theme: party.theme,
+      }));
+    }
+  } catch (e) {
+    console.warn('[API] Failed to fetch joined parties', e);
+  }
+  return [];
+};
+
 
 export const getFriendships = async (): Promise<Friendship[]> => {
   const response = await fetch(`${API_BASE_URL}/friendships/`, {

@@ -51,6 +51,22 @@ class EventViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(event)
         return Response(serializer.data)
 
+    @action(detail=False, methods=['get'])
+    def joined(self, request):
+        """
+        내가 참여한 파티 목록 조회
+        """
+        user = request.user
+        if not user.is_authenticated:
+             return Response({'error': 'Authentication required.'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        # Participant 모델을 통해 내가 참여한 이벤트 ID 목록을 가져옴
+        # 혹은 Event 모델에서 participant__user=user 로 바로 필터링 가능
+        events = Event.objects.filter(participant__user=user).order_by('-date')
+        
+        serializer = self.get_serializer(events, many=True)
+        return Response(serializer.data)
+
 
 # POST 요청을 오버라이드하여 초대 코드를 통한 참가자 등록 로직 구현
 class ParticipantViewSet(viewsets.ModelViewSet):
