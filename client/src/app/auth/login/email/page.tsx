@@ -35,21 +35,22 @@ export default function LoginPage() {
             <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
                 <div className="text-center mb-8">
                     <h2 className="text-3xl font-bold text-gray-900">로그인</h2>
-                    <p className="text-gray-500 mt-2">이메일로 로그인하세요.</p>
+                    <p className="text-gray-500 mt-2">이름 또는 이메일로 로그인하세요.</p>
                 </div>
 
                 <form onSubmit={handleLogin} className="space-y-6">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            이메일
+                            이름 또는 이메일
                         </label>
                         <input
                             type="text"
+                            autoComplete="username"
                             required
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                            placeholder="example@email.com"
+                            placeholder="홍길동 또는 example@email.com"
                         />
                     </div>
 

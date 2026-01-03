@@ -2,7 +2,7 @@
 from rest_framework import serializers
 from .models import Event, Participant, Todo, Theme, Friendship # Theme, Friendship 모델 import
 from django.contrib.auth.models import User
-
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 # ----------------------------------------------------
 # Theme Serializer 추가
@@ -38,12 +38,33 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = User.objects.create_user(
-            username=validated_data['username'],
+            username=validated_data['email'],
             email=validated_data['email'],
-            password=validated_data['password']
+            password=validated_data['password'],
+            first_name=validated_data['username']
         )
         return user
 
+
+class EmailTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        # 이메일 또는 이름(username)으로 유저를 찾아서 username 필드에 넣어줌
+        login_id = attrs.get("username")
+        password = attrs.get("password")
+
+        if login_id and password:
+            # 1. 이메일로 찾기
+            user = User.objects.filter(email=login_id).first()
+            
+            # 2. 없으면 이름(username)으로 찾기
+            if not user:
+                 user = User.objects.filter(username=login_id).first()
+
+            if user:
+                # 찾은 유저의 실제 username을 attrs에 다시 설정
+                attrs["username"] = user.username
+
+        return super().validate(attrs)
 
 # ----------------------------------------------------
 # 추가적 Event Serializer 확장 (장소, 테마, 음식 필드 반영)
@@ -85,6 +106,7 @@ class TodoSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+
 # ----------------------------------------------------
 # Friendship Serializer (친구 목록)
 # ----------------------------------------------------
@@ -95,4 +117,3 @@ class FriendshipSerializer(serializers.ModelSerializer):
     class Meta:
         model = Friendship
         fields = ['id', 'from_user', 'to_user', 'status', 'created_at']
-

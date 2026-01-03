@@ -2,7 +2,8 @@
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from core.views import EventViewSet, ParticipantViewSet, TodoViewSet, ThemeViewSet, RegisterView, UserDetailView, FriendshipViewSet # Auth Views 추가
+from core.views import EventViewSet, ParticipantViewSet, TodoViewSet, ThemeViewSet, RegisterView, UserDetailView, FriendshipViewSet
+from core.serializers import EmailTokenObtainPairSerializer # Custom Serializer 임포트
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -24,7 +25,7 @@ urlpatterns = [
     # Auth Endpoints
     path('api/auth/register/', RegisterView.as_view(), name='auth_register'),
     path('api/auth/user/', UserDetailView.as_view(), name='auth_user'),
-    path('api/auth/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/auth/login/', TokenObtainPairView.as_view(serializer_class=EmailTokenObtainPairSerializer), name='token_obtain_pair'),
     path('api/auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
 
