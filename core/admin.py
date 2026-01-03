@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Theme, Event, Participant, Todo  # 모든 모델 import
+from .models import Theme, Event, Participant, Todo, Friendship  # 모든 모델 import
 
 # 1. Theme 모델 등록
 @admin.register(Theme)
@@ -24,4 +24,11 @@ class ParticipantAdmin(admin.ModelAdmin):
 class TodoAdmin(admin.ModelAdmin):
     list_display = ('task', 'event', 'is_completed')
     list_filter = ('event', 'is_completed')
+
+
+@admin.register(Friendship)
+class FriendshipAdmin(admin.ModelAdmin):
+    list_display = ('from_user', 'to_user', 'status', 'created_at')
+    list_filter = ('status',)
+
 

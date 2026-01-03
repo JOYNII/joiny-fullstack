@@ -3,7 +3,13 @@
 import React from 'react';
 import { UserCircleIcon as UserCircleIconSolid } from '@heroicons/react/24/solid';
 
-const FriendRequestItem = ({ request }) => (
+interface FriendRequestItemProps {
+  request: { id: string | number; name: string; avatar?: string | null };
+  onAccept: () => void;
+  onReject: () => void;
+}
+
+const FriendRequestItem = ({ request, onAccept, onReject }: FriendRequestItemProps) => (
   <div className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg">
     <div className="flex items-center">
       {request.avatar ? (
@@ -14,9 +20,10 @@ const FriendRequestItem = ({ request }) => (
       <span className="font-medium text-gray-800">{request.name}</span>
     </div>
     <div className="flex space-x-2">
-      <button className="px-3 py-1 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-600">수락</button>
-      <button className="px-3 py-1 bg-gray-200 text-gray-700 rounded-md text-sm hover:bg-gray-300">거절</button>
+      <button onClick={onAccept} className="px-3 py-1 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-600">수락</button>
+      <button onClick={onReject} className="px-3 py-1 bg-gray-200 text-gray-700 rounded-md text-sm hover:bg-gray-300">거절</button>
     </div>
+
   </div>
 );
 

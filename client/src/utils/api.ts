@@ -1,5 +1,5 @@
 // src/utils/api.ts
-import { Party, User } from '../types';
+import { Party, User, Friendship } from '../types';
 
 const API_BASE_URL = 'http://localhost:8000/api'; // Django API Server
 
@@ -266,3 +266,49 @@ export const deleteParty = async (partyId: string): Promise<void> => {
   return Promise.resolve();
 };
 
+
+export const getFriendships = async (): Promise<Friendship[]> => {
+  const response = await fetch(`${API_BASE_URL}/friendships/`, {
+    headers: getAuthHeaders(),
+  });
+  if (response.ok) {
+    return response.json();
+  }
+  return [];
+};
+
+export const requestFriend = async (email: string): Promise<Friendship> => {
+  const response = await fetch(`${API_BASE_URL}/friendships/`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ email }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || errorData.message || 'Failed to send friend request');
+  }
+  return response.json();
+};
+
+export const acceptFriend = async (friendshipId: number): Promise<void> => {
+  const response = await fetch(`${API_BASE_URL}/friendships/${friendshipId}/accept/`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to accept friend request');
+  }
+};
+
+export const removeFriend = async (friendshipId: number): Promise<void> => {
+  const response = await fetch(`${API_BASE_URL}/friendships/${friendshipId}/`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to remove friend');
+  }
+};

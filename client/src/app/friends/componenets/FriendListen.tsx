@@ -3,7 +3,11 @@
 import React from 'react';
 import { UserCircleIcon as UserCircleIconSolid } from '@heroicons/react/24/solid';
 
-const FriendListItem = ({ friend }) => (
+interface FriendListItemProps {
+  friend: { id: string | number; name: string; avatar?: string | null };
+}
+
+const FriendListItem = ({ friend }: FriendListItemProps) => (
   <div className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg">
     <div className="flex items-center">
       {friend.avatar ? (

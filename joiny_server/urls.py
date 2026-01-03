@@ -2,7 +2,7 @@
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from core.views import EventViewSet, ParticipantViewSet, TodoViewSet, ThemeViewSet, RegisterView, UserDetailView # Auth Views 추가
+from core.views import EventViewSet, ParticipantViewSet, TodoViewSet, ThemeViewSet, RegisterView, UserDetailView, FriendshipViewSet # Auth Views 추가
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -14,6 +14,8 @@ router.register(r'events', EventViewSet, basename='event')
 router.register(r'participants', ParticipantViewSet, basename='participant')
 router.register(r'todos', TodoViewSet, basename='todo')
 router.register(r'themes', ThemeViewSet, basename='theme') # Theme 라우팅 등록
+router.register(r'friendships', FriendshipViewSet, basename='friendship')
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),

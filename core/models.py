@@ -74,3 +74,23 @@ class ChatMessage(models.Model):
 
     def __str__(self):
         return f"{self.sender.username}: {self.message[:20]}"
+
+
+# ----------------------------------------------------
+# 5. Friendship 모델 (친구 요청 및 관계 관리)
+# ----------------------------------------------------
+class Friendship(models.Model):
+    from_user = models.ForeignKey(User, related_name='friendships_sent', on_delete=models.CASCADE)
+    to_user = models.ForeignKey(User, related_name='friendships_received', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(
+        max_length=10, 
+        choices=[('pending', 'Pending'), ('accepted', 'Accepted')], 
+        default='pending'
+    )
+
+    class Meta:
+        unique_together = ('from_user', 'to_user')
+
+    def __str__(self):
+        return f"{self.from_user} -> {self.to_user} ({self.status})"

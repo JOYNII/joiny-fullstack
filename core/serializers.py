@@ -1,6 +1,6 @@
 # core/serializers.py
 from rest_framework import serializers
-from .models import Event, Participant, Todo, Theme # Theme 모델 import
+from .models import Event, Participant, Todo, Theme, Friendship # Theme, Friendship 모델 import
 from django.contrib.auth.models import User
 
 
@@ -18,9 +18,11 @@ class ThemeSerializer(serializers.ModelSerializer):
 # User Serializer (사용자 정보 조회)
 # ----------------------------------------------------
 class UserSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source='username', read_only=True)
+    
     class Meta:
         model = User
-        fields = ['id', 'username', 'email']
+        fields = ['id', 'username', 'name', 'email']
 
 
 # ----------------------------------------------------
@@ -81,3 +83,16 @@ class TodoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Todo
         fields = '__all__'
+
+
+# ----------------------------------------------------
+# Friendship Serializer (친구 목록)
+# ----------------------------------------------------
+class FriendshipSerializer(serializers.ModelSerializer):
+    from_user = UserSerializer(read_only=True)
+    to_user = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Friendship
+        fields = ['id', 'from_user', 'to_user', 'status', 'created_at']
+

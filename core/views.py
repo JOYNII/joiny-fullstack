@@ -3,9 +3,11 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import Event, Participant, Todo, Theme
+from .models import Event, Participant, Todo, Theme, Friendship
+from django.contrib.auth.models import User
+from django.db.models import Q
 
-from .serializers import EventSerializer, ParticipantSerializer, TodoSerializer, ThemeSerializer, RegisterSerializer, UserSerializer
+from .serializers import EventSerializer, ParticipantSerializer, TodoSerializer, ThemeSerializer, RegisterSerializer, UserSerializer, FriendshipSerializer
 from rest_framework import generics, permissions
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -143,3 +145,65 @@ class UserDetailView(generics.RetrieveAPIView):
 
     def get_object(self):
         return self.request.user
+
+
+# ----------------------------------------------------
+# Friendship ViewSet
+# ----------------------------------------------------
+class FriendshipViewSet(viewsets.ModelViewSet):
+    """
+    친구 관계 관리
+    - GET /: 내 친구 목록 및 요청 목록 조회
+    - POST /: 친구 요청 보내기 (body: { "email": "target@email.com" })
+    - DELETE /{id}/: 친구 삭제 또는 요청 취소/거절
+    - POST /{id}/accept/: 친구 요청 수락
+    """
+    serializer_class = FriendshipSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # 나와 관련된 모든 친구 관계 (보낸거, 받은거)
+        user = self.request.user
+        return Friendship.objects.filter(Q(from_user=user) | Q(to_user=user))
+
+    def create(self, request, *args, **kwargs):
+        # 이메일로 유저 찾아서 친구 요청
+        target_email = request.data.get('email')
+        if not target_email:
+            return Response({'error': 'Email is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            target_user = User.objects.get(email=target_email)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if target_user == request.user:
+            return Response({'error': 'Cannot send request to yourself.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 이미 존재하는 관계 확인
+        existing = Friendship.objects.filter(
+            (Q(from_user=request.user) & Q(to_user=target_user)) |
+            (Q(from_user=target_user) & Q(to_user=request.user))
+        ).first()
+
+        if existing:
+            if existing.status == 'accepted':
+                return Response({'message': 'Already friends.'}, status=status.HTTP_200_OK)
+            return Response({'message': 'Request already sent or received.'}, status=status.HTTP_200_OK)
+
+        # 요청 생성
+        friendship = Friendship.objects.create(from_user=request.user, to_user=target_user, status='pending')
+        serializer = self.get_serializer(friendship)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['post'])
+    def accept(self, request, pk=None):
+        friendship = self.get_object()
+        
+        # 요청 받은 사람만 수락 가능
+        if friendship.to_user != request.user:
+            return Response({'error': 'No permission to accept this request.'}, status=status.HTTP_403_FORBIDDEN)
+        
+        friendship.status = 'accepted'
+        friendship.save()
+        return Response({'message': 'Friend request accepted.'})

@@ -22,3 +22,12 @@ export interface Party {
   members: User[]; // 이제 User 객체의 배열입니다.
   maxMembers: number;
 }
+
+export interface Friendship {
+  id: number;
+  from_user: User;
+  to_user: User;
+  status: 'pending' | 'accepted';
+  created_at: string;
+}
+
