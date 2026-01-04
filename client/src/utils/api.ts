@@ -1,7 +1,13 @@
 // src/utils/api.ts
 import { Party, User, Friendship } from '../types';
 
-const API_BASE_URL = 'https://estell-supereffective-selena.ngrok-free.dev/api'; // Ngrok Tunnel URL for Mobile Access
+// 1. 외부 접속용
+const NGROK_URL = 'https://estell-supereffective-selena.ngrok-free.dev/api';
+// 2. 로컬 개발용
+const LOCAL_URL = 'http://127.0.0.1:8000/api';
+
+// 현재 선택: 환경변수가 있으면 그걸 쓰고, 없으면 로컬 주소를 사용
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || LOCAL_URL;
 
 // =============================================================================
 // [AUTH & TOKEN MANAGEMENT]
@@ -149,7 +155,7 @@ export const getParties = async (): Promise<Party[]> => {
         hostName: party.host_name,
         fee: party.fee,
         members: (party.members || []).map((m: any) => ({
-          id: m.user ? String(m.user) : `guest-${m.id}`, // User ID를 id로 사용 (없으면 임시 ID)
+          id: m.user ? String(m.user) : `guest - ${m.id} `, // User ID를 id로 사용 (없으면 임시 ID)
           name: m.name,
           participantId: m.id // 삭제를 위한 Participant ID
         })),

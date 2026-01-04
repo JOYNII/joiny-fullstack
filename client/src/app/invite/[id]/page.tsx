@@ -163,7 +163,6 @@ export default function InvitationLandingPage() {
             </div>
 
 
-
             {/* 로그인 모달 */}
             {showLoginModal && <PleaseLogin />}
         </div>
