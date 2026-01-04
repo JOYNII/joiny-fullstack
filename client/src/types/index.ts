@@ -13,6 +13,7 @@ export interface Party {
   id: string;
   theme: string | null;
   hostName: string;
+  hostId?: string; // 주최자 ID
   partyName: string;
   date: string;
   partyDescription: string;

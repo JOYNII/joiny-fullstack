@@ -15,8 +15,8 @@ export const useSocket = (namespace: string) => {
         // We pass the namespace string directly to io()
 
         const socketInstance = io(namespace, {
-            path: '/socket.io', // standard path, adjust if your server uses different one
-            // Add any other config here if needed
+            path: '/socket.io',
+            transports: ['websocket'], // HTTP Polling 방지 (ngrok 요청 수 제한 회피)
         });
 
         socketInstance.on('connect', () => {

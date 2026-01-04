@@ -25,10 +25,31 @@ class EventViewSet(viewsets.ModelViewSet):
         # 인증 기능 추가 후에는 request.user를 사용해 필터링해야 합니다.
         return Event.objects.all().order_by('-date')
 
+    def check_host_permission(self, request, instance):
+        if not request.user.is_authenticated:
+            return False
+        # 호스트가 설정되어 있지 않거나, 요청 유저가 호스트와 다르면 권한 없음
+        if instance.host and instance.host != request.user:
+            return False
+        return True
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if not self.check_host_permission(request, instance):
+            return Response({'error': 'Only host can edit this party.'}, status=status.HTTP_403_FORBIDDEN)
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if not self.check_host_permission(request, instance):
+            return Response({'error': 'Only host can delete this party.'}, status=status.HTTP_403_FORBIDDEN)
+        return super().destroy(request, *args, **kwargs)
+
     def perform_create(self, serializer):
         # 파티 생성 시 현재 로그인한 유저를 호스트로 파티 저장 후, 참가자로 자동 등록
         host_name = self.request.user.username if self.request.user.is_authenticated else "Guest"
-        event = serializer.save(host_name=host_name)
+        host = self.request.user if self.request.user.is_authenticated else None
+        event = serializer.save(host_name=host_name, host=host)
         
         # 생성자를 참가자(호스트)로 추가
         if self.request.user.is_authenticated:

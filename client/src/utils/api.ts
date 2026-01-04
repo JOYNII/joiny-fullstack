@@ -153,6 +153,7 @@ export const getParties = async (): Promise<Party[]> => {
         partyFood: party.food_description,
         maxMembers: party.max_members,
         hostName: party.host_name,
+        hostId: party.host ? String(party.host) : undefined,
         fee: party.fee,
         members: (party.members || []).map((m: any) => ({
           id: m.user ? String(m.user) : `guest - ${m.id} `, // User ID를 id로 사용 (없으면 임시 ID)
@@ -185,6 +186,7 @@ export const getPartyById = async (id: string): Promise<Party | undefined> => {
     partyFood: party.food_description,
     maxMembers: party.max_members,
     hostName: party.host_name,
+    hostId: party.host ? String(party.host) : undefined,
     fee: party.fee,
     members: (party.members || []).map((m: any) => ({
       id: m.user ? String(m.user) : `guest-${m.id}`,
@@ -228,6 +230,7 @@ export const createParty = async (partyData: Omit<Party, 'id' | 'members'>): Pro
     partyFood: newPartyData.food_description,
     maxMembers: newPartyData.max_members,
     hostName: newPartyData.host_name,
+    hostId: newPartyData.host ? String(newPartyData.host) : undefined,
     fee: newPartyData.fee,
     members: [],
     theme: newPartyData.theme,
@@ -272,6 +275,45 @@ export const deleteParty = async (partyId: string): Promise<void> => {
   return Promise.resolve();
 };
 
+export const updateParty = async (partyId: string, partyData: Partial<Party>): Promise<Party> => {
+  const payload: any = {};
+  if (partyData.partyName) payload.name = partyData.partyName;
+  if (partyData.partyDescription) payload.description = partyData.partyDescription;
+  if (partyData.date) payload.date = partyData.date;
+  if (partyData.place) payload.location_name = partyData.place;
+  if (partyData.partyFood) payload.food_description = partyData.partyFood;
+  if (partyData.theme) payload.theme = partyData.theme;
+  if (partyData.fee) payload.fee = partyData.fee;
+  if (partyData.maxMembers) payload.max_members = partyData.maxMembers;
+
+  const response = await fetch(`${API_BASE_URL}/events/${partyId}/`, {
+    method: 'PATCH',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || error.error || 'Failed to update party');
+  }
+
+  const newPartyData = await response.json();
+  return {
+    id: newPartyData.id,
+    partyName: newPartyData.name,
+    partyDescription: newPartyData.description,
+    date: newPartyData.date,
+    place: newPartyData.location_name,
+    partyFood: newPartyData.food_description,
+    maxMembers: newPartyData.max_members,
+    hostName: newPartyData.host_name,
+    hostId: newPartyData.host ? String(newPartyData.host) : undefined,
+    fee: newPartyData.fee,
+    members: [],
+    theme: newPartyData.theme,
+  };
+};
+
 export const getJoinedEvents = async (): Promise<Party[]> => {
   try {
     const response = await fetch(`${API_BASE_URL}/events/joined/`, {
@@ -288,6 +330,7 @@ export const getJoinedEvents = async (): Promise<Party[]> => {
         partyFood: party.food_description,
         maxMembers: party.max_members,
         hostName: party.host_name,
+        hostId: party.host ? String(party.host) : undefined,
         fee: party.fee,
         members: (party.members || []).map((m: any) => ({
           id: m.user ? String(m.user) : `guest-${m.id}`,

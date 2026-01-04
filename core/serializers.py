@@ -85,10 +85,10 @@ class EventSerializer(serializers.ModelSerializer):
             'id', 'name', 'description', 'date', # description 필드 추가
             'location_name', 'latitude', 'longitude', 'place_id',
             'theme', 'food_description',
-            'host_name', 'fee', # host_name, fee 필드 추가
+            'host_name', 'host', 'fee', # host_name, fee 필드 추가
             'invite_code', 'invite_url', 'members', 'max_members'
         ]
-        read_only_fields = ['invite_code', 'invite_url']
+        read_only_fields = ['invite_code', 'invite_url', 'host']
 
     def get_invite_url(self, obj):
         request = self.context.get('request')

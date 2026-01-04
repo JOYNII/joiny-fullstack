@@ -8,6 +8,7 @@ import { Party } from "../../../types";
 import JoinLeaveButton from "./components/JoinLeaveButton";
 import { useErrorNotification } from "../../../hooks/useErrorNotification";
 import { Gowun_Batang, Inter, Nanum_Myeongjo } from 'next/font/google';
+import HostControls from "./components/HostControls";
 
 // -----------------------------------------------------------------------------
 // Assets & Fonts
@@ -62,6 +63,8 @@ export default function PartyDetailsPage() {
     ? party.members.find(member => String(member.id) === String(currentUser.id))
     : null;
   const isMember = !!memberRecord;
+
+  const isHost = (currentUser && party?.hostId && String(currentUser.id) === String(party.hostId)) || false;
 
   const { mutate: toggleJoinLeave, isPending: isJoinLeavePending } = useMutation({
     mutationFn: () => {
@@ -214,6 +217,9 @@ export default function PartyDetailsPage() {
 
         {/* FOOTER: Action Button */}
         <div className="mt-16 text-center relative z-10 flex flex-col items-center gap-4">
+
+          <HostControls party={party} isHost={isHost} />
+
           {currentUser ? (
             <div className="flex gap-4">
               <button

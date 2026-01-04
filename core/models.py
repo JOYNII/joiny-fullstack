@@ -33,6 +33,7 @@ class Event(models.Model):
     food_description = models.CharField(max_length=255, blank=True, null=True)  # 음식/준비물 설명
 
     host_name = models.CharField(max_length=100, default='주최자') # 새로운 주최자 이름 필드
+    host = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='hosted_events') # 실제 User 연결
     fee = models.IntegerField(default=0) # 새로운 참가비 필드
 
     # 초대 링크에 사용될 고유 코드 필드
