@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import LocationSelector from "./components/LocationSelector";
 import PlaceSection from "./components/PlaceSection";
-import ImageUploader from "./components/ImageUploader";
+
 import FormField from "../../components/FormField";
 import PageHeader from "../../components/PageHeader";
 import FeeSelector from "../../components/FeeSelector";
@@ -135,7 +135,7 @@ export default function InvitationPage() {
 
           <FeeSelector value={fee} onFeeChange={setFee} />
 
-          <ImageUploader />
+
 
           <div className="pt-8 flex items-center justify-start gap-4 border-t border-gray-200">
             <button

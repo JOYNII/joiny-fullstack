@@ -13,6 +13,7 @@ import { Gowun_Batang, Inter, Nanum_Myeongjo } from 'next/font/google';
 // Assets & Fonts
 // -----------------------------------------------------------------------------
 import { getTheme } from "../../../utils/themes";
+import LocationViewModal from "../../../components/LocationViewModal";
 
 // Effects
 const SnowEffect = () => {
@@ -42,6 +43,7 @@ const SnowEffect = () => {
 };
 
 export default function PartyDetailsPage() {
+  const [showMapModal, setShowMapModal] = React.useState(false); // Add State
   const params = useParams();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
@@ -143,10 +145,36 @@ export default function PartyDetailsPage() {
             {/* Item 2: Location */}
             <div className={`pl-4 border-l-4 ${ui.dividerColor.replace('bg-', 'border-')}`}>
               <span className={`block text-xs font-bold mb-1 ${ui.labelColor}`}>Where</span>
-              <span className={`text-2xl font-semibold ${ui.bodyColor}`}>{party.place || "TBD"}</span>
+              <div className="flex items-center gap-3 flex-wrap">
+                <span className={`text-2xl font-semibold ${ui.bodyColor}`}>{party.place || "TBD"}</span>
+                {party.place && (
+                  <button
+                    onClick={() => setShowMapModal(true)}
+                    className={`px-3 py-1 rounded-full text-xs font-bold border transition-transform active:scale-95 flex items-center gap-1 ${ui.buttonStyle(false, false)}`}
+                  >
+                    <span>🗺️</span> 지도 보기
+                  </button>
+                )}
+              </div>
             </div>
 
-            {/* Item 3: Message */}
+            {/* Item 3: Fee (Optional) */}
+            {party.fee && Number(party.fee) > 0 && (
+              <div className={`pl-4 border-l-4 ${ui.dividerColor.replace('bg-', 'border-')}`}>
+                <span className={`block text-xs font-bold mb-1 ${ui.labelColor}`}>Entry Fee</span>
+                <span className={`text-2xl font-semibold ${ui.bodyColor}`}>₩{Number(party.fee).toLocaleString()}</span>
+              </div>
+            )}
+
+            {/* Item 4: Food (Optional) */}
+            {party.partyFood && (
+              <div className={`pl-4 border-l-4 ${ui.dividerColor.replace('bg-', 'border-')}`}>
+                <span className={`block text-xs font-bold mb-1 ${ui.labelColor}`}>Food & Drink</span>
+                <p className={`text-lg leading-relaxed ${ui.bodyColor} opacity-90`}>{party.partyFood}</p>
+              </div>
+            )}
+
+            {/* Item 5: Message */}
             <div className={`pl-4 border-l-4 ${ui.dividerColor.replace('bg-', 'border-')}`}>
               <span className={`block text-xs font-bold mb-2 ${ui.labelColor}`}>Message</span>
               <p className={`text-lg leading-relaxed ${ui.bodyColor} opacity-90`}>
@@ -168,7 +196,9 @@ export default function PartyDetailsPage() {
             <div className="w-full h-px bg-current opacity-10 mx-auto"></div>
 
             <div>
-              <p className={`text-xs font-bold mb-3 ${ui.labelColor} opacity-70`}>Attendees ({party.members.length})</p>
+              <p className={`text-xs font-bold mb-3 ${ui.labelColor} opacity-70`}>
+                Attendees ({party.members.length} {party.maxMembers > 0 ? `/ ${party.maxMembers}` : ''})
+              </p>
               <div className="flex flex-wrap justify-center gap-2">
                 {party.members.length > 0 ? party.members.map((m, idx) => (
                   <div key={idx} className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shadow-sm ${(!party.theme || party.theme === 'default') ? 'bg-white text-indigo-600' : 'bg-gray-200 text-gray-700'}`} title={m.name}>
@@ -211,6 +241,14 @@ export default function PartyDetailsPage() {
           )}
         </div>
       </div>
+
+      {/* Map Modal */}
+      {showMapModal && party.place && (
+        <LocationViewModal
+          placeName={party.place}
+          onClose={() => setShowMapModal(false)}
+        />
+      )}
     </div>
   );
 }
