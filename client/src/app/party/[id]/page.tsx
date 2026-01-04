@@ -12,39 +12,7 @@ import { Gowun_Batang, Inter, Nanum_Myeongjo } from 'next/font/google';
 // -----------------------------------------------------------------------------
 // Assets & Fonts
 // -----------------------------------------------------------------------------
-const fontChristmas = Gowun_Batang({ weight: ["400", "700"], subsets: ["latin"] });
-const fontDefault = Inter({ subsets: ["latin"] });
-const fontReunion = Nanum_Myeongjo({ weight: ["400", "700", "800"], subsets: ["latin"] });
-
-// -----------------------------------------------------------------------------
-// Theme Configuration
-// -----------------------------------------------------------------------------
-type ThemeConfig = {
-  wrapperBg: string; // 전체 화면 배경
-  wrapperGradient?: string; // 그라데이션 배경 (Modern용)
-  fontClass: string;
-
-  // Card Styles
-  cardContainer: string; // 카드 컨테이너 스타일 (배경, 그림자, 테두리 등)
-  innerBorder?: string; // 내부 장식용 테두리 (Reunion 등)
-
-  // Text Colors
-  titleColor: string;
-  subtitleColor: string;
-  labelColor: string;
-  bodyColor: string;
-
-  // Accents
-  dividerColor: string; // 구분선 색상
-
-  // Components
-  EffectComponent?: React.FC;
-  buttonStyle: (isMember: boolean, isPending: boolean) => string;
-
-  // Specifics
-  headerPrefix?: string;
-  headerSuffix?: string;
-};
+import { getTheme } from "../../../utils/themes";
 
 // Effects
 const SnowEffect = () => {
@@ -71,53 +39,6 @@ const SnowEffect = () => {
             `}</style>
     </div>
   );
-};
-
-const THEMES: Record<string, ThemeConfig> = {
-  christmas: {
-    wrapperBg: "bg-[#052f17]",
-    fontClass: fontChristmas.className,
-    cardContainer: "bg-[#fffdf5] border-4 border-red-700 shadow-[0_0_40px_rgba(255,0,0,0.2)] rounded-2xl",
-    titleColor: "text-red-700",
-    subtitleColor: "text-green-800",
-    labelColor: "text-green-700 uppercase tracking-widest",
-    bodyColor: "text-gray-800",
-    dividerColor: "bg-red-700/20",
-    EffectComponent: SnowEffect,
-    buttonStyle: (isMember, isPending) => isMember
-      ? "bg-transparent text-red-700 border-2 border-red-700 hover:bg-red-50"
-      : "bg-red-700 text-white shadow-lg hover:shadow-red-900/40 hover:bg-red-800",
-  },
-  reunion: {
-    wrapperBg: "bg-[#1e293b]",
-    fontClass: fontReunion.className,
-    cardContainer: "bg-[#fffbf0] border-2 border-[#c5a059] shadow-2xl rounded-sm",
-    innerBorder: "border-2 border-[#c5a059] opacity-40",
-    titleColor: "text-[#0f172a]",
-    subtitleColor: "text-[#c5a059]",
-    labelColor: "text-[#b45309] uppercase tracking-widest",
-    bodyColor: "text-[#334155]",
-    dividerColor: "bg-[#c5a059]",
-    EffectComponent: undefined,
-    buttonStyle: (isMember, isPending) => isMember
-      ? "bg-transparent text-[#94a3b8] border border-[#cbd5e1] hover:bg-[#f1f5f9]"
-      : "bg-[#0f172a] text-[#f1f5f9] hover:shadow-xl hover:bg-[#1e293b]",
-  },
-  default: { // Modern Theme
-    wrapperBg: "bg-gray-50",
-    wrapperGradient: "bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 animate-gradient-xy",
-    fontClass: fontDefault.className,
-    cardContainer: "bg-white/60 backdrop-blur-xl border border-white/50 shadow-xl rounded-3xl",
-    titleColor: "text-gray-900",
-    subtitleColor: "text-indigo-600",
-    labelColor: "text-indigo-500 uppercase tracking-widest",
-    bodyColor: "text-gray-700",
-    dividerColor: "bg-indigo-200",
-    EffectComponent: undefined, // Gradient는 wrapperGradient로 처리
-    buttonStyle: (isMember, isPending) => isMember
-      ? "bg-white/50 text-gray-500 border border-gray-200 hover:bg-white"
-      : "bg-black text-white shadow-lg hover:bg-gray-800 hover:scale-105 transition-transform",
-  }
 };
 
 export default function PartyDetailsPage() {
@@ -161,9 +82,8 @@ export default function PartyDetailsPage() {
   if (error || !party) return <div className="min-h-screen flex items-center justify-center"><p>Error loading party.</p></div>;
 
   // Theme Setup
-  const themeKey = party.theme in THEMES ? party.theme! : 'default';
-  const ui = THEMES[themeKey];
-  const Effect = ui.EffectComponent;
+  const ui = getTheme(party.theme);
+  const Effect = party.theme === 'christmas' ? SnowEffect : undefined;
 
   return (
     <div className={`min-h-screen flex items-center justify-center p-4 md:p-8 lg:p-12 relative overflow-hidden transition-colors duration-500 ${ui.wrapperBg} ${ui.fontClass}`}>
@@ -204,7 +124,7 @@ export default function PartyDetailsPage() {
         <div className="text-center mb-12 relative z-10">
           <p className={`text-sm font-bold mb-4 ${ui.subtitleColor} tracking-[0.3em] uppercase`}>Invitation</p>
           <h1 className={`text-4xl md:text-5xl font-bold mb-6 tracking-tight ${ui.titleColor}`}>
-            {ui.headerPrefix}{party.partyName}{ui.headerSuffix}
+            {party.partyName}
           </h1>
           <div className={`w-20 h-[2px] mx-auto opacity-60 ${ui.dividerColor}`}></div>
         </div>
@@ -236,7 +156,7 @@ export default function PartyDetailsPage() {
           </div>
 
           {/* RIGHT: Visual / Members (1 Col Span) */}
-          <div className={`rounded-xl p-6 flex flex-col items-center text-center justify-center space-y-6 ${themeKey === 'default' ? 'bg-white/40 shadow-inner' : 'bg-black/5'}`}>
+          <div className={`rounded-xl p-6 flex flex-col items-center text-center justify-center space-y-6 ${party.theme === 'default' || !party.theme ? 'bg-white/40 shadow-inner' : 'bg-black/5'}`}>
 
             {/* Host Info */}
             <div>
@@ -251,7 +171,7 @@ export default function PartyDetailsPage() {
               <p className={`text-xs font-bold mb-3 ${ui.labelColor} opacity-70`}>Attendees ({party.members.length})</p>
               <div className="flex flex-wrap justify-center gap-2">
                 {party.members.length > 0 ? party.members.map((m, idx) => (
-                  <div key={idx} className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shadow-sm ${themeKey === 'default' ? 'bg-white text-indigo-600' : 'bg-gray-200 text-gray-700'}`} title={m.name}>
+                  <div key={idx} className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shadow-sm ${(!party.theme || party.theme === 'default') ? 'bg-white text-indigo-600' : 'bg-gray-200 text-gray-700'}`} title={m.name}>
                     {m.name[0]}
                   </div>
                 )) : (
@@ -269,7 +189,8 @@ export default function PartyDetailsPage() {
               <button
                 onClick={() => toggleJoinLeave()}
                 disabled={isJoinLeavePending}
-                className={`px-12 py-4 rounded-full text-lg font-bold transition-all duration-300 transform active:scale-95 ${ui.buttonStyle(isMember, isJoinLeavePending)}`}
+                className={`px-12 py-4 rounded-full text-lg font-bold transition-all duration-300 transform active:scale-95 ${ui.buttonStyle(!isMember, isJoinLeavePending)}`}
+
               >
                 {isJoinLeavePending ? "Processing..." : isMember ? "Decline Invitation" : "Accept Invitation"}
               </button>
